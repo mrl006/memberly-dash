@@ -392,7 +392,7 @@ const ProductManagement = () => {
         <h1 className="text-2xl font-bold tracking-tight">Product Management</h1>
         <Dialog open={isAddDialogOpen} onOpenChange={handleDialogOpenChange}>
           <DialogTrigger asChild>
-            <Button>
+            <Button className="bg-blue-600 hover:bg-blue-700">
               <Plus className="mr-2 h-4 w-4" /> Add Product
             </Button>
           </DialogTrigger>
@@ -554,7 +554,7 @@ const ProductManagement = () => {
 
       <div className="flex gap-4 mb-6">
         <div className="relative flex-1 max-w-sm">
-          <SearchIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search products..."
             value={searchTerm}
@@ -565,7 +565,7 @@ const ProductManagement = () => {
         
         <Select defaultValue="all">
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Filter by type" />
+            <SelectValue placeholder="All Types" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Types</SelectItem>
@@ -576,8 +576,8 @@ const ProductManagement = () => {
         </Select>
       </div>
 
-      <Card>
-        <CardHeader>
+      <Card className="shadow-sm border">
+        <CardHeader className="pb-3">
           <CardTitle>Products</CardTitle>
           <CardDescription>
             Manage your membership products and digital downloads.
@@ -848,7 +848,7 @@ const ProductManagement = () => {
             </Table>
           </div>
         </CardContent>
-        <CardFooter className="flex justify-between">
+        <CardFooter className="flex justify-between border-t pt-4">
           <div className="text-sm text-muted-foreground">
             Showing {filteredProducts.length} of {products.length} products
           </div>

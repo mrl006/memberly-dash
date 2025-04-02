@@ -11,13 +11,9 @@ import {
   LogOut,
   Menu,
   X,
-  Bell,
-  Search,
-  BarChart,
   Key
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { initializeUsers } from "@/services/userService";
@@ -47,7 +43,7 @@ const AdminLayout = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Mobile sidebar toggle */}
       <button 
         className={`lg:hidden fixed bottom-4 right-4 z-50 p-3 rounded-full bg-primary text-white shadow-lg`}
@@ -58,13 +54,13 @@ const AdminLayout = () => {
 
       {/* Sidebar */}
       <aside 
-        className={`bg-blue-500 w-64 flex-shrink-0 flex-col ${
+        className={`bg-blue-500 w-64 flex-shrink-0 ${
           showSidebar ? "flex" : "hidden"
-        } fixed inset-y-0 lg:flex z-40`}
+        } fixed inset-y-0 lg:flex z-40 flex-col`}
       >
-        <div className="p-4 text-white text-center">
-          <h1 className="text-2xl font-bold">Memberly</h1>
-          <p className="text-sm">Admin Panel</p>
+        <div className="p-6 text-white text-center">
+          <h1 className="text-3xl font-bold">Memberly</h1>
+          <p className="text-sm mt-1">Admin Panel</p>
         </div>
         
         <div className="flex flex-col flex-grow overflow-y-auto">
@@ -74,7 +70,7 @@ const AdminLayout = () => {
               <span>Dashboard</span>
             </NavLink>
             <NavLink to="/admin/dashboard-settings" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
-              <BarChart size={20} />
+              <LayoutDashboard size={20} />
               <span>Dashboard Settings</span>
             </NavLink>
             <NavLink to="/admin/users" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
@@ -116,9 +112,9 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main content */}
-      <div className={`flex-1 ${showSidebar ? "lg:ml-64" : ""}`}>
+      <div className={`flex-1 flex flex-col ${showSidebar ? "lg:ml-64" : ""}`}>
         <AdminHeader />
-        <main className="p-6">
+        <main className="flex-1 p-6">
           <Outlet />
         </main>
       </div>

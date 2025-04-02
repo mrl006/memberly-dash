@@ -1,5 +1,5 @@
 
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,14 +17,14 @@ const AdminHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200 py-4 px-6 flex justify-between items-center">
-      <div className="flex-1 max-w-md">
-        <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+    <header className="bg-white border-b border-gray-200 py-4 px-6 flex justify-between items-center sticky top-0 z-30">
+      <div className="relative flex-1 max-w-md">
+        <div className="relative flex items-center">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             type="search"
             placeholder="Search..."
-            className="w-full pl-9 bg-gray-50"
+            className="pl-10 pr-4 py-2 w-full bg-gray-50 border border-gray-200"
           />
         </div>
       </div>
