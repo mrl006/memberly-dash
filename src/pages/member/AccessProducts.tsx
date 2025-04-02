@@ -1,9 +1,9 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Lock, Unlock, FileText, Download, PlayCircle, Video, Image, ExternalLink } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Unlock, Lock, FileText, Download, PlayCircle, Video, Image } from "lucide-react";
 import { getUserPurchasedProductsWithDetails } from "@/services/purchaseService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -39,13 +39,13 @@ const AccessProducts = () => {
   // Helper function to determine the icon based on product type
   const getProductIcon = (product: any) => {
     const type = product.type?.toLowerCase();
-    if (type?.includes('course')) return <Video className="h-12 w-12 text-primary" />;
-    if (type?.includes('ebook') || type?.includes('pdf')) return <FileText className="h-12 w-12 text-primary" />;
-    if (type?.includes('image') || type?.includes('photo')) return <Image className="h-12 w-12 text-primary" />;
-    if (type?.includes('video')) return <PlayCircle className="h-12 w-12 text-primary" />;
-    if (type?.includes('download') || type?.includes('digital')) return <Download className="h-12 w-12 text-primary" />;
+    if (type?.includes('course')) return <Video className="h-16 w-16 text-primary" />;
+    if (type?.includes('ebook') || type?.includes('pdf')) return <FileText className="h-16 w-16 text-primary" />;
+    if (type?.includes('image') || type?.includes('photo')) return <Image className="h-16 w-16 text-primary" />;
+    if (type?.includes('video')) return <PlayCircle className="h-16 w-16 text-primary" />;
+    if (type?.includes('download') || type?.includes('digital')) return <Download className="h-16 w-16 text-primary" />;
     // Default icon
-    return <FileText className="h-12 w-12 text-primary" />;
+    return <FileText className="h-16 w-16 text-primary" />;
   };
   
   if (isLoading) {
@@ -71,58 +71,39 @@ const AccessProducts = () => {
       {products.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden">
-              <CardHeader className="pb-4">
-                <div className="flex justify-between items-start">
-                  <Badge 
-                    variant="outline" 
-                    className={`${product.purchaseInfo?.status === "active" 
-                      ? "bg-green-50 text-green-700 border-green-200" 
-                      : "bg-amber-50 text-amber-700 border-amber-200"}`}
-                  >
-                    {product.purchaseInfo?.status === "active" ? "Active" : "Inactive"}
-                  </Badge>
-                </div>
-                <div className="flex flex-col items-center mt-2">
-                  {getProductIcon(product)}
-                  <CardTitle className="mt-4 text-center">{product.name}</CardTitle>
-                </div>
-                <CardDescription className="text-center">
-                  {product.description || `${product.type} content`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="text-center pb-6">
-                <div className="flex justify-center space-x-2 text-sm">
-                  <span className="text-muted-foreground">Purchased:</span>
-                  <span className="font-medium">
-                    {new Date(product.purchaseInfo?.purchaseDate).toLocaleDateString()}
-                  </span>
-                </div>
-                {product.purchaseInfo?.status !== "active" && (
-                  <div className="mt-4 flex items-center justify-center text-amber-600">
-                    <Lock className="h-4 w-4 mr-1" />
-                    <span className="text-sm">Subscription expired</span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  className="w-full" 
-                  disabled={product.purchaseInfo?.status !== "active"}
+            <Card key={product.id} className="overflow-hidden p-6 flex flex-col items-center">
+              <div className="absolute top-3 left-3">
+                <Badge 
+                  variant="outline" 
+                  className={`${product.purchaseInfo?.status === "active" 
+                    ? "bg-green-50 text-green-700 border-green-200" 
+                    : "bg-amber-50 text-amber-700 border-amber-200"}`}
                 >
-                  {product.purchaseInfo?.status === "active" ? (
-                    <>
-                      <Unlock className="mr-2 h-4 w-4" />
-                      Access Content
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="mr-2 h-4 w-4" />
-                      Renew Subscription
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
+                  {product.purchaseInfo?.status === "active" ? "Active" : "Inactive"}
+                </Badge>
+              </div>
+              
+              <div className="flex flex-col items-center justify-center py-6">
+                {getProductIcon(product)}
+                <h2 className="text-xl font-bold mt-4 text-center">{product.name}</h2>
+              </div>
+              
+              <Button 
+                className="w-full mt-auto" 
+                disabled={product.purchaseInfo?.status !== "active"}
+              >
+                {product.purchaseInfo?.status === "active" ? (
+                  <>
+                    <Unlock className="mr-2 h-4 w-4" />
+                    Access Content
+                  </>
+                ) : (
+                  <>
+                    <Lock className="mr-2 h-4 w-4" />
+                    Renew Subscription
+                  </>
+                )}
+              </Button>
             </Card>
           ))}
         </div>
