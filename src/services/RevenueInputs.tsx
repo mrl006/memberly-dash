@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent, 
@@ -24,7 +24,7 @@ const RevenueInputs = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  useState(() => {
+  useEffect(() => {
     const fetchData = async () => {
       try {
         setIsLoading(true);
