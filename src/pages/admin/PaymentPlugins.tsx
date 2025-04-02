@@ -11,7 +11,22 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, Download, CheckCircle, AlertCircle, Search, Bitcoin, DollarSign, ChevronsUpDown } from "lucide-react";
+import { 
+  CreditCard, 
+  Download, 
+  Check, 
+  X, 
+  Search, 
+  Settings,
+  Info,
+  Plus,
+  Trash,
+  Edit,
+  Eye,
+  EyeOff,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Switch } from "@/components/ui/switch";
@@ -33,7 +48,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { paymentPluginsService } from "@/services/paymentPluginsService";
+import { Toaster } from "@/components/ui/toaster";
 
 // Payment plugin types
 type PaymentMethod = "card" | "paypal" | "crypto" | "bank" | "regional";
@@ -56,11 +90,17 @@ const PaymentPlugins = () => {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
   const [paymentPlugins, setPaymentPlugins] = useState<PaymentPlugin[]>([]);
   const [selectedPlugin, setSelectedPlugin] = useState<PaymentPlugin | null>(null);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof PaymentPlugin;
+    direction: 'ascending' | 'descending';
+  } | null>(null);
   
   useEffect(() => {
     // Load plugins from the service
@@ -84,67 +124,97 @@ const PaymentPlugins = () => {
     // Filter by category
     return matchesSearch && plugin.category === activeTab;
   });
+
+  // Sort the plugins
+  const sortedPlugins = [...filteredPlugins];
+  if (sortConfig !== null) {
+    sortedPlugins.sort((a, b) => {
+      if (a[sortConfig.key] < b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      if (a[sortConfig.key] > b[sortConfig.key]) {
+        return sortConfig.direction === 'ascending' ? 1 : -1;
+      }
+      return 0;
+    });
+  }
   
   const handleInstallPlugin = (pluginId: string) => {
     setIsLoading(true);
     
-    // Simulate API call
+    // Call the service to install the plugin
+    const success = paymentPluginsService.installPlugin(pluginId);
+    
     setTimeout(() => {
-      setPaymentPlugins(prevPlugins => 
-        prevPlugins.map(plugin => 
-          plugin.id === pluginId 
-            ? { ...plugin, status: "inactive" } 
-            : plugin
-        )
-      );
+      if (success) {
+        setPaymentPlugins([...paymentPluginsService.getPaymentPlugins()]);
+        
+        toast({
+          title: "Plugin Installed",
+          description: "The payment plugin has been successfully installed. Configure it to activate.",
+        });
+      } else {
+        toast({
+          title: "Installation Failed",
+          description: "Failed to install the plugin. Please try again.",
+          variant: "destructive",
+        });
+      }
       
       setIsLoading(false);
-      toast({
-        title: "Plugin Installed",
-        description: "The payment plugin has been successfully installed. Configure it to activate.",
-      });
     }, 1000);
   };
   
   const handleUninstallPlugin = (pluginId: string) => {
     setIsLoading(true);
     
-    // Simulate API call
+    // Call the service to uninstall the plugin
+    const success = paymentPluginsService.uninstallPlugin(pluginId);
+    
     setTimeout(() => {
-      setPaymentPlugins(prevPlugins => 
-        prevPlugins.map(plugin => 
-          plugin.id === pluginId 
-            ? { ...plugin, status: "not_installed", apiKey: undefined } 
-            : plugin
-        )
-      );
+      if (success) {
+        setPaymentPlugins([...paymentPluginsService.getPaymentPlugins()]);
+        
+        toast({
+          title: "Plugin Uninstalled",
+          description: "The payment plugin has been successfully uninstalled.",
+        });
+      } else {
+        toast({
+          title: "Uninstallation Failed",
+          description: "Failed to uninstall the plugin. Please try again.",
+          variant: "destructive",
+        });
+      }
       
       setIsLoading(false);
-      toast({
-        title: "Plugin Uninstalled",
-        description: "The payment plugin has been successfully uninstalled.",
-      });
     }, 1000);
   };
   
   const handleTogglePlugin = (pluginId: string, enabled: boolean) => {
-    setPaymentPlugins(prevPlugins => 
-      prevPlugins.map(plugin => 
-        plugin.id === pluginId 
-          ? { ...plugin, status: enabled ? "active" : "inactive" } 
-          : plugin
-      )
-    );
+    // Call the service to toggle the plugin status
+    const success = paymentPluginsService.togglePluginStatus(pluginId, enabled);
     
-    toast({
-      title: enabled ? "Plugin Enabled" : "Plugin Disabled",
-      description: `The payment plugin has been ${enabled ? "enabled" : "disabled"}.`,
-    });
+    if (success) {
+      setPaymentPlugins([...paymentPluginsService.getPaymentPlugins()]);
+      
+      toast({
+        title: enabled ? "Plugin Enabled" : "Plugin Disabled",
+        description: `The payment plugin has been ${enabled ? "enabled" : "disabled"}.`,
+      });
+    } else {
+      toast({
+        title: "Status Update Failed",
+        description: "Failed to update the plugin status. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   const handleConfigurePlugin = (plugin: PaymentPlugin) => {
     setSelectedPlugin(plugin);
     setApiKey(plugin.apiKey || "");
+    setShowApiKey(false);
     setIsConfigOpen(true);
   };
   
@@ -153,24 +223,38 @@ const PaymentPlugins = () => {
     
     setIsLoading(true);
     
-    // Simulate API call
+    // Call the service to configure the plugin
+    const success = paymentPluginsService.configurePlugin(selectedPlugin.id, apiKey);
+    
     setTimeout(() => {
-      setPaymentPlugins(prevPlugins => 
-        prevPlugins.map(plugin => 
-          plugin.id === selectedPlugin.id 
-            ? { ...plugin, apiKey, status: "active" } 
-            : plugin
-        )
-      );
+      if (success) {
+        setPaymentPlugins([...paymentPluginsService.getPaymentPlugins()]);
+        setIsConfigOpen(false);
+        
+        toast({
+          title: "Configuration Saved",
+          description: "The payment plugin configuration has been successfully saved and activated.",
+        });
+      } else {
+        toast({
+          title: "Configuration Failed",
+          description: "Failed to configure the plugin. Please try again.",
+          variant: "destructive",
+        });
+      }
       
       setIsLoading(false);
-      setIsConfigOpen(false);
-      
-      toast({
-        title: "Configuration Saved",
-        description: "The payment plugin configuration has been successfully saved and activated.",
-      });
     }, 1000);
+  };
+  
+  const handleSort = (key: keyof PaymentPlugin) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
   };
   
   const getCategoryIcon = (category: PaymentMethod) => {
@@ -178,17 +262,270 @@ const PaymentPlugins = () => {
       case "card":
         return <CreditCard className="h-4 w-4" />;
       case "paypal":
-        return <DollarSign className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4" />;
       case "crypto":
-        return <Bitcoin className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4" />;
       case "bank":
-        return <DollarSign className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4" />;
       case "regional":
-        return <ChevronsUpDown className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4" />;
       default:
         return <CreditCard className="h-4 w-4" />;
     }
   };
+  
+  const getStatusBadge = (status: PluginStatus) => {
+    switch (status) {
+      case "active":
+        return (
+          <Badge variant="default" className="bg-green-500 hover:bg-green-600">
+            Active
+          </Badge>
+        );
+      case "inactive":
+        return (
+          <Badge variant="secondary" className="bg-yellow-500 hover:bg-yellow-600 text-white">
+            Inactive
+          </Badge>
+        );
+      case "not_installed":
+        return (
+          <Badge variant="outline" className="text-gray-500">
+            Not Installed
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
+  
+  const renderGridView = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {sortedPlugins.length > 0 ? (
+        sortedPlugins.map((plugin) => (
+          <Card key={plugin.id} className="overflow-hidden hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-2">
+                  {getCategoryIcon(plugin.category)}
+                  <CardTitle className="text-lg">{plugin.name}</CardTitle>
+                </div>
+                <div className="flex gap-2">
+                  {getStatusBadge(plugin.status)}
+                  <Badge variant={plugin.price === "Free" ? "default" : "secondary"}>
+                    {plugin.price}
+                  </Badge>
+                </div>
+              </div>
+              <CardDescription className="text-xs mt-1">Version {plugin.version}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-gray-600 line-clamp-3">{plugin.description}</p>
+              
+              {plugin.status !== "not_installed" && plugin.apiKey && (
+                <div className="mt-3 bg-slate-50 p-2 rounded text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium">API Key:</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 w-6 p-0"
+                      onClick={() => {
+                        const pluginIndex = paymentPlugins.findIndex(p => p.id === plugin.id);
+                        if (pluginIndex !== -1) {
+                          const updatedPlugins = [...paymentPlugins];
+                          const currentPlugin = { ...updatedPlugins[pluginIndex] };
+                          currentPlugin._showApiKey = !currentPlugin._showApiKey;
+                          updatedPlugins[pluginIndex] = currentPlugin;
+                          setPaymentPlugins(updatedPlugins);
+                        }
+                      }}
+                    >
+                      {plugin._showApiKey ? (
+                        <EyeOff className="h-3 w-3" />
+                      ) : (
+                        <Eye className="h-3 w-3" />
+                      )}
+                    </Button>
+                  </div>
+                  <div className="font-mono mt-1 break-all">
+                    {plugin._showApiKey ? plugin.apiKey : "•".repeat(12)}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+            <CardFooter className="flex justify-between items-center pt-2 pb-4">
+              {plugin.status !== "not_installed" ? (
+                <>
+                  <div className="flex items-center gap-2">
+                    <Switch 
+                      id={`toggle-${plugin.id}`} 
+                      checked={plugin.status === "active"} 
+                      onCheckedChange={(checked) => handleTogglePlugin(plugin.id, checked)}
+                      disabled={!plugin.apiKey}
+                    />
+                    <span className="text-xs">{plugin.status === "active" ? "Enabled" : "Disabled"}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleConfigurePlugin(plugin)}
+                    >
+                      <Settings className="h-4 w-4 mr-2" />
+                      Configure
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleUninstallPlugin(plugin.id)}
+                    >
+                      <Trash className="h-4 w-4 mr-2" />
+                      Uninstall
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <Button 
+                  className="w-full" 
+                  size="sm"
+                  onClick={() => handleInstallPlugin(plugin.id)}
+                  disabled={isLoading}
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Install Plugin
+                </Button>
+              )}
+            </CardFooter>
+          </Card>
+        ))
+      ) : (
+        <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
+          <CreditCard className="h-12 w-12 text-gray-400 mb-4" />
+          <h3 className="text-lg font-medium">No payment plugins found</h3>
+          <p className="text-sm text-gray-500 mt-2">
+            Try adjusting your search or filter to find what you're looking for.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+  
+  const renderTableView = () => (
+    <div className="rounded-md border">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('name')}
+            >
+              <div className="flex items-center gap-2">
+                Name
+                {sortConfig?.key === 'name' && (
+                  sortConfig.direction === 'ascending' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                )}
+              </div>
+            </TableHead>
+            <TableHead>Category</TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('status')}
+            >
+              <div className="flex items-center gap-2">
+                Status
+                {sortConfig?.key === 'status' && (
+                  sortConfig.direction === 'ascending' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                )}
+              </div>
+            </TableHead>
+            <TableHead 
+              className="cursor-pointer"
+              onClick={() => handleSort('price')}
+            >
+              <div className="flex items-center gap-2">
+                Price
+                {sortConfig?.key === 'price' && (
+                  sortConfig.direction === 'ascending' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                )}
+              </div>
+            </TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {sortedPlugins.length > 0 ? (
+            sortedPlugins.map((plugin) => (
+              <TableRow key={plugin.id}>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">{plugin.name}</span>
+                    <span className="text-xs text-gray-500">v{plugin.version}</span>
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    {getCategoryIcon(plugin.category)}
+                    <span className="capitalize">{plugin.category}</span>
+                  </div>
+                </TableCell>
+                <TableCell>{getStatusBadge(plugin.status)}</TableCell>
+                <TableCell>
+                  <Badge variant={plugin.price === "Free" ? "default" : "secondary"}>
+                    {plugin.price}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right">
+                  {plugin.status !== "not_installed" ? (
+                    <div className="flex items-center justify-end gap-2">
+                      <Switch 
+                        id={`toggle-table-${plugin.id}`} 
+                        checked={plugin.status === "active"} 
+                        onCheckedChange={(checked) => handleTogglePlugin(plugin.id, checked)}
+                        disabled={!plugin.apiKey}
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleConfigurePlugin(plugin)}
+                      >
+                        <Settings className="h-4 w-4" />
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleUninstallPlugin(plugin.id)}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button 
+                      size="sm"
+                      onClick={() => handleInstallPlugin(plugin.id)}
+                      disabled={isLoading}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Install
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={5} className="text-center py-8">
+                <div className="flex flex-col items-center justify-center">
+                  <CreditCard className="h-8 w-8 text-gray-400 mb-2" />
+                  <p className="text-sm text-gray-500">No payment plugins found</p>
+                </div>
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
+  );
   
   return (
     <div className="space-y-6">
@@ -199,8 +536,8 @@ const PaymentPlugins = () => {
         </p>
       </div>
       
-      <div className="flex items-center space-x-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="relative flex-1 max-w-md w-full">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-500" />
           <Input
             type="search"
@@ -209,6 +546,26 @@ const PaymentPlugins = () => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+        </div>
+        <div className="flex items-center space-x-2 w-full sm:w-auto">
+          <Button
+            variant={viewMode === "grid" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("grid")}
+            className="flex-1 sm:flex-none"
+          >
+            <i className="grid-view-icon"></i>
+            Grid View
+          </Button>
+          <Button
+            variant={viewMode === "table" ? "default" : "outline"}
+            size="sm"
+            onClick={() => setViewMode("table")}
+            className="flex-1 sm:flex-none"
+          >
+            <i className="table-view-icon"></i>
+            Table View
+          </Button>
         </div>
       </div>
       
@@ -225,80 +582,7 @@ const PaymentPlugins = () => {
         
         <TabsContent value={activeTab} className="mt-0">
           <ScrollArea className="h-[calc(100vh-300px)]">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPlugins.length > 0 ? (
-                filteredPlugins.map((plugin) => (
-                  <Card key={plugin.id} className="overflow-hidden">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center gap-2">
-                          {getCategoryIcon(plugin.category)}
-                          <CardTitle className="text-lg">{plugin.name}</CardTitle>
-                        </div>
-                        <Badge variant={plugin.price === "Free" ? "default" : "secondary"}>
-                          {plugin.price}
-                        </Badge>
-                      </div>
-                      <CardDescription className="text-xs">Version {plugin.version}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-600 line-clamp-3">{plugin.description}</p>
-                    </CardContent>
-                    <CardFooter className="flex justify-between items-center pt-2 pb-4">
-                      {plugin.status !== "not_installed" ? (
-                        <>
-                          <div className="flex items-center gap-2">
-                            <Switch 
-                              id={`toggle-${plugin.id}`} 
-                              checked={plugin.status === "active"} 
-                              onCheckedChange={(checked) => handleTogglePlugin(plugin.id, checked)}
-                              disabled={!plugin.apiKey}
-                            />
-                            <span className="text-xs">{plugin.status === "active" ? "Enabled" : "Disabled"}</span>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleConfigurePlugin(plugin)}
-                            >
-                              <CheckCircle className="h-4 w-4 mr-2" />
-                              Configure
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleUninstallPlugin(plugin.id)}
-                            >
-                              <AlertCircle className="h-4 w-4 mr-2" />
-                              Uninstall
-                            </Button>
-                          </div>
-                        </>
-                      ) : (
-                        <Button 
-                          className="w-full" 
-                          size="sm"
-                          onClick={() => handleInstallPlugin(plugin.id)}
-                          disabled={isLoading}
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Install Plugin
-                        </Button>
-                      )}
-                    </CardFooter>
-                  </Card>
-                ))
-              ) : (
-                <div className="col-span-full flex flex-col items-center justify-center py-12 text-center">
-                  <CreditCard className="h-12 w-12 text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium">No payment plugins found</h3>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Try adjusting your search or filter to find what you're looking for.
-                  </p>
-                </div>
-              )}
-            </div>
+            {viewMode === "grid" ? renderGridView() : renderTableView()}
           </ScrollArea>
         </TabsContent>
       </Tabs>
@@ -314,10 +598,20 @@ const PaymentPlugins = () => {
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="api-key">API Key</Label>
+              <div className="flex justify-between items-center">
+                <Label htmlFor="api-key">API Key</Label>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 p-0"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                >
+                  {showApiKey ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                </Button>
+              </div>
               <Input
                 id="api-key"
-                type="password"
+                type={showApiKey ? "text" : "password"}
                 placeholder="Enter your API key"
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
@@ -355,18 +649,47 @@ const PaymentPlugins = () => {
                 </Select>
               </div>
             )}
+            
+            <div className="bg-slate-50 p-3 rounded-md border border-slate-200">
+              <div className="flex items-start gap-2">
+                <Info className="h-4 w-4 text-blue-500 mt-0.5" />
+                <div className="text-xs text-slate-600">
+                  <p className="font-medium">Documentation</p>
+                  <p className="mt-1">
+                    For detailed information on how to obtain your API keys and configure this 
+                    payment gateway, please refer to the 
+                    <a 
+                      href={selectedPlugin?.documentation} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline px-1"
+                    >
+                      official documentation
+                    </a>.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
           <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsConfigOpen(false)}
+            >
+              Cancel
+            </Button>
             <Button 
               type="submit" 
               onClick={savePluginConfiguration}
               disabled={isLoading || !apiKey}
             >
-              Save Changes
+              {isLoading ? "Saving..." : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      <Toaster />
     </div>
   );
 };

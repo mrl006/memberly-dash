@@ -14,6 +14,7 @@ interface PaymentPlugin {
   documentation: string;
   apiKey?: string;
   settings?: Record<string, any>;
+  _showApiKey?: boolean;
 }
 
 // Mock payment plugins data
@@ -185,6 +186,7 @@ class PaymentPluginsService {
     
     this.plugins[pluginIndex].status = "not_installed";
     this.plugins[pluginIndex].apiKey = undefined;
+    this.plugins[pluginIndex]._showApiKey = false;
     return true;
   }
   
