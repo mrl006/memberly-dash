@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { AlertCircle, Loader2, ShieldCheck, KeyRound } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { findUserByEmail } from "@/services/userService";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -49,47 +50,54 @@ const Login = () => {
     
     setIsLoading(true);
     
-    // For demo purposes, simulate login with delayed response
+    // In a real production app, this would have proper password hashing/verification
+    // For now we're just checking if the user exists in our system
     setTimeout(() => {
       setIsLoading(false);
       
-      // Admin login logic
+      // Admin login logic - in production you should have proper admin authentication
       if (loginType === "admin") {
-        if (email === "admin@memberly.com" && password === "admin123") {
+        const adminUser = findUserByEmail(email);
+        
+        if (adminUser) {
           toast({
             title: "Admin Login Successful",
             description: "Welcome to the admin dashboard!",
           });
+          
           if (rememberMe) {
             localStorage.setItem("memberly-user-email", email);
             localStorage.setItem("memberly-user-type", "admin");
           }
+          
           navigate("/admin");
           return;
         }
         
-        // Invalid admin credentials
         setErrorMessage("Invalid admin credentials. Please try again.");
         return;
       }
       
       // Regular member login logic
-      if (email === "member@example.com" && password === "member123") {
+      const user = findUserByEmail(email);
+      
+      if (user) {
         toast({
           title: "Login Successful",
           description: "Welcome back to your member dashboard!",
         });
+        
         if (rememberMe) {
           localStorage.setItem("memberly-user-email", email);
           localStorage.setItem("memberly-user-type", "member");
         }
+        
         navigate("/member");
         return;
       }
       
-      // Invalid credentials
       setErrorMessage("Invalid email or password. Please try again.");
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -202,12 +210,6 @@ const Login = () => {
             Create an account
           </Link>
         </p>
-        
-        <div className="mt-4 text-muted-foreground">
-          <p>Demo accounts:</p>
-          <p>Admin: admin@memberly.com / admin123</p>
-          <p>Member: member@example.com / member123</p>
-        </div>
       </div>
     </div>
   );

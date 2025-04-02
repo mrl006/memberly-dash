@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { addUser } from "@/services/userService";
+import { addUser, findUserByEmail } from "@/services/userService";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -34,6 +34,17 @@ const Register = () => {
       toast({
         title: "Terms & Conditions",
         description: "Please agree to the terms and conditions to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Check if user already exists with this email
+    const existingUser = findUserByEmail(email);
+    if (existingUser) {
+      toast({
+        title: "Email already in use",
+        description: "This email address is already registered. Please use a different email or try logging in.",
         variant: "destructive",
       });
       return;

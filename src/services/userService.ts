@@ -10,7 +10,7 @@ export interface User {
   joined: string;
 }
 
-// Retrieve users from localStorage or use default data
+// Retrieve users from localStorage
 const getInitialUsers = (): User[] => {
   const storedUsers = localStorage.getItem('users');
   if (storedUsers) {
@@ -20,50 +20,9 @@ const getInitialUsers = (): User[] => {
       console.error('Error parsing stored users:', e);
     }
   }
-
-  // Default users if none in localStorage
-  return [
-    {
-      id: "1",
-      name: "John Doe",
-      email: "john.doe@example.com",
-      subscription: "Professional",
-      status: "active",
-      joined: "Apr 23, 2023",
-    },
-    {
-      id: "2",
-      name: "Jane Smith",
-      email: "jane.smith@example.com",
-      subscription: "Basic",
-      status: "active",
-      joined: "May 12, 2023",
-    },
-    {
-      id: "3",
-      name: "Bob Johnson",
-      email: "bob.johnson@example.com",
-      subscription: "Professional",
-      status: "inactive",
-      joined: "Jan 5, 2023",
-    },
-    {
-      id: "4",
-      name: "Alice Brown",
-      email: "alice.brown@example.com",
-      subscription: "Premium",
-      status: "active",
-      joined: "Mar 18, 2023",
-    },
-    {
-      id: "5",
-      name: "Charlie Davis",
-      email: "charlie.davis@example.com",
-      subscription: "Basic",
-      status: "expired",
-      joined: "Feb 27, 2023",
-    },
-  ];
+  
+  // Return empty array if no users in localStorage
+  return [];
 };
 
 // Get all users
@@ -75,9 +34,12 @@ export const getUsers = (): User[] => {
 export const addUser = (user: Omit<User, 'id' | 'joined' | 'status'>): User => {
   const users = getUsers();
   
+  // Generate a unique ID based on timestamp and random number
+  const uniqueId = Date.now().toString(36) + Math.random().toString(36).substring(2);
+  
   const newUser: User = {
     ...user,
-    id: (users.length + 1).toString(),
+    id: uniqueId,
     status: "active",
     joined: new Date().toLocaleDateString('en-US', { 
       month: 'short', 
@@ -134,6 +96,12 @@ export const toggleUserStatus = (userId: string): User | null => {
   const newStatus = userToUpdate.status === "active" ? "inactive" : "active";
   
   return updateUser(userId, { status: newStatus });
+};
+
+// Find a user by email - used for authentication
+export const findUserByEmail = (email: string): User | undefined => {
+  const users = getUsers();
+  return users.find(user => user.email.toLowerCase() === email.toLowerCase());
 };
 
 // Save users to localStorage
