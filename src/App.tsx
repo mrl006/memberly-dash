@@ -1,3 +1,4 @@
+
 import {
   createBrowserRouter,
   RouterProvider,
@@ -5,36 +6,42 @@ import {
 import "./App.css";
 import AdminLayout from "./layouts/AdminLayout";
 import MemberLayout from "./layouts/MemberLayout";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import HomePage from "./pages/HomePage";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import UsersPage from "./pages/admin/UsersPage";
-import ProductsPage from "./pages/admin/ProductsPage";
-import CouponsPage from "./pages/admin/CouponsPage";
-import SupportPage from "./pages/admin/SupportPage";
-import SettingsPage from "./pages/admin/SettingsPage";
-import MemberDashboard from "./pages/member/MemberDashboard";
-import MemberProfile from "./pages/member/MemberProfile";
+import AuthLayout from "./layouts/AuthLayout";
+import { Login as LoginPage } from "./pages/auth/Login";
+import { Register as RegisterPage } from "./pages/auth/Register";
+import NotFound from "./pages/NotFound";
+import LandingPage from "./pages/LandingPage";
+import { Dashboard as AdminDashboard } from "./pages/admin/Dashboard";
+import { UserManagement as UsersPage } from "./pages/admin/UserManagement";
+import ProductsPage from "./pages/admin/ProductManagement";
+import { CouponManagement as CouponsPage } from "./pages/admin/CouponManagement";
+import SupportTickets from "./pages/admin/SupportTickets";
+import Settings from "./pages/admin/Settings";
+import { Dashboard as MemberDashboard } from "./pages/member/Dashboard";
+import { Profile as MemberProfile } from "./pages/member/Profile";
 import ProductManagement from "./pages/admin/ProductManagement";
 import DashboardSettings from "./pages/admin/DashboardSettings";
-
-// Add the import for the ApiKeyManagement component
 import ApiKeyManagement from "./pages/admin/ApiKeyManagement";
 
 function App() {
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <HomePage />,
+      element: <LandingPage />,
     },
     {
-      path: "/login",
-      element: <LoginPage />,
-    },
-    {
-      path: "/register",
-      element: <RegisterPage />,
+      path: "/auth",
+      element: <AuthLayout />,
+      children: [
+        {
+          path: "login",
+          element: <LoginPage />,
+        },
+        {
+          path: "register",
+          element: <RegisterPage />,
+        },
+      ],
     },
     {
       path: "/admin",
@@ -66,11 +73,11 @@ function App() {
         },
         {
           path: "support",
-          element: <SupportPage />,
+          element: <SupportTickets />,
         },
         {
           path: "settings",
-          element: <SettingsPage />,
+          element: <Settings />,
         },
       ],
     },
@@ -88,6 +95,10 @@ function App() {
         },
       ],
     },
+    {
+      path: "*",
+      element: <NotFound />,
+    }
   ]);
 
   return (
