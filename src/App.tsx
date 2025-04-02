@@ -26,6 +26,8 @@ import Downloads from "./pages/member/Downloads";
 import Support from "./pages/member/Support";
 import Subscriptions from "./pages/member/Subscriptions";
 import AdminLogin from "./pages/admin/AdminLogin";
+import ReferralManagement from "./pages/admin/ReferralManagement";
+import Referrals from "./pages/member/Referrals";
 
 function App() {
   const router = createBrowserRouter([
@@ -80,6 +82,10 @@ function App() {
           element: <CouponManagement />,
         },
         {
+          path: "referrals",
+          element: <ReferralManagement />,
+        },
+        {
           path: "support",
           element: <SupportTickets />,
         },
@@ -108,6 +114,10 @@ function App() {
         {
           path: "access-products",
           element: <AccessProducts />,
+        },
+        {
+          path: "referrals",
+          element: <Referrals />,
         },
         {
           path: "downloads",

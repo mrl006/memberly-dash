@@ -11,7 +11,8 @@ import {
   Menu,
   X,
   Bell,
-  Key
+  Key,
+  Users
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MemberHeader from "@/components/member/MemberHeader";
@@ -161,6 +162,19 @@ const MemberLayout = () => {
                 >
                   <Key size={20} />
                   <span>Access Products</span>
+                </NavLink>
+                <NavLink 
+                  to="/member/referrals" 
+                  className={({isActive}) => 
+                    `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
+                      isActive 
+                        ? "bg-primary/10 text-primary font-medium" 
+                        : "text-gray-700 hover:bg-gray-100"
+                    }`
+                  }
+                >
+                  <Users size={20} />
+                  <span>Referrals</span>
                 </NavLink>
                 <NavLink 
                   to="/member/downloads" 
