@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,7 +14,8 @@ import {
   Download, 
   FileText, 
   Tag,
-  AlertCircle
+  AlertCircle,
+  Code
 } from "lucide-react";
 import { 
   Dialog, 
@@ -36,10 +36,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import CodeEditor from "@/components/CodeEditor";
 
-// Interface for product data
 interface Product {
   id: number;
   name: string;
@@ -49,14 +49,70 @@ interface Product {
   type: "Membership" | "Digital Download" | "Course";
   downloadUrl?: string;
   licensedUsers?: number;
+  codeContent?: {
+    html: string;
+    css: string;
+    js: string;
+  };
 }
 
-// Mock product data
 const initialProducts: Product[] = [
-  { id: 1, name: "Premium Membership", price: "99.99", status: "Active", description: "Access to all premium features", type: "Membership", licensedUsers: 245 },
-  { id: 2, name: "Basic Membership", price: "49.99", status: "Active", description: "Access to basic features", type: "Membership", licensedUsers: 723 },
-  { id: 3, name: "E-Book: Membership Guide", price: "19.99", status: "Active", description: "Comprehensive guide on membership benefits", type: "Digital Download", downloadUrl: "/downloads/ebook-guide.pdf" },
-  { id: 4, name: "Video Course Bundle", price: "149.99", status: "Draft", description: "Complete video course series", type: "Course", downloadUrl: "/downloads/course-bundle.zip" },
+  { 
+    id: 1, 
+    name: "Premium Membership", 
+    price: "99.99", 
+    status: "Active", 
+    description: "Access to all premium features", 
+    type: "Membership", 
+    licensedUsers: 245,
+    codeContent: {
+      html: "<!-- Premium membership HTML content -->",
+      css: "/* Premium membership styles */",
+      js: "// Premium membership scripts"
+    }
+  },
+  { 
+    id: 2, 
+    name: "Basic Membership", 
+    price: "49.99", 
+    status: "Active", 
+    description: "Access to basic features", 
+    type: "Membership", 
+    licensedUsers: 723,
+    codeContent: {
+      html: "<!-- Basic membership HTML content -->",
+      css: "/* Basic membership styles */",
+      js: "// Basic membership scripts"
+    }
+  },
+  { 
+    id: 3, 
+    name: "E-Book: Membership Guide", 
+    price: "19.99", 
+    status: "Active", 
+    description: "Comprehensive guide on membership benefits", 
+    type: "Digital Download", 
+    downloadUrl: "/downloads/ebook-guide.pdf",
+    codeContent: {
+      html: "<!-- E-book HTML content -->",
+      css: "/* E-book styles */",
+      js: "// E-book scripts"
+    }
+  },
+  { 
+    id: 4, 
+    name: "Video Course Bundle", 
+    price: "149.99", 
+    status: "Draft", 
+    description: "Complete video course series", 
+    type: "Course", 
+    downloadUrl: "/downloads/course-bundle.zip",
+    codeContent: {
+      html: "<!-- Course HTML content -->",
+      css: "/* Course styles */",
+      js: "// Course scripts"
+    }
+  },
 ];
 
 const ProductManagement = () => {
@@ -69,10 +125,16 @@ const ProductManagement = () => {
     price: "",
     status: "Draft",
     description: "",
-    type: "Digital Download"
+    type: "Digital Download",
+    codeContent: {
+      html: "<!-- Add your HTML content here -->",
+      css: "/* Add your CSS styles here */",
+      js: "// Add your JavaScript code here"
+    }
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState("details");
+  const [codeEditorTab, setCodeEditorTab] = useState("html");
   const { toast } = useToast();
 
   const filteredProducts = products.filter((product) =>
@@ -98,7 +160,12 @@ const ProductManagement = () => {
       description: newProduct.description || "",
       type: newProduct.type as "Membership" | "Digital Download" | "Course",
       downloadUrl: newProduct.downloadUrl,
-      licensedUsers: 0
+      licensedUsers: 0,
+      codeContent: newProduct.codeContent || {
+        html: "<!-- Add your HTML content here -->",
+        css: "/* Add your CSS styles here */",
+        js: "// Add your JavaScript code here"
+      }
     };
 
     setProducts([...products, productToAdd]);
@@ -108,7 +175,12 @@ const ProductManagement = () => {
       price: "",
       status: "Draft",
       description: "",
-      type: "Digital Download"
+      type: "Digital Download",
+      codeContent: {
+        html: "<!-- Add your HTML content here -->",
+        css: "/* Add your CSS styles here */",
+        js: "// Add your JavaScript code here"
+      }
     });
 
     toast({
@@ -142,23 +214,27 @@ const ProductManagement = () => {
   };
 
   const handleFileUpload = () => {
-    // Simulate file upload - in a real app, handle file uploading here
     toast({
       title: "File Uploaded",
       description: "Your file has been uploaded successfully."
     });
   };
 
-  // Reset form when dialog closes
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
       setActiveTab("details");
+      setCodeEditorTab("html");
       setNewProduct({
         name: "",
         price: "",
         status: "Draft",
         description: "",
-        type: "Digital Download"
+        type: "Digital Download",
+        codeContent: {
+          html: "<!-- Add your HTML content here -->",
+          css: "/* Add your CSS styles here */",
+          js: "// Add your JavaScript code here"
+        }
       });
     }
     setIsAddDialogOpen(open);
@@ -166,8 +242,29 @@ const ProductManagement = () => {
 
   const resetEditForm = () => {
     setActiveTab("details");
+    setCodeEditorTab("html");
     setSelectedProduct(null);
     setIsEditDialogOpen(false);
+  };
+
+  const handleCodeChange = (type: "html" | "css" | "js", value: string) => {
+    if (isEditDialogOpen && selectedProduct) {
+      setSelectedProduct({
+        ...selectedProduct,
+        codeContent: {
+          ...selectedProduct.codeContent!,
+          [type]: value
+        }
+      });
+    } else if (isAddDialogOpen) {
+      setNewProduct({
+        ...newProduct,
+        codeContent: {
+          ...newProduct.codeContent!,
+          [type]: value
+        }
+      });
+    }
   };
 
   return (
@@ -189,10 +286,13 @@ const ProductManagement = () => {
             </DialogHeader>
             
             <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="details">Basic Details</TabsTrigger>
                 <TabsTrigger value="description">Description</TabsTrigger>
                 <TabsTrigger value="files">Files & Downloads</TabsTrigger>
+                <TabsTrigger value="code">
+                  <Code className="mr-2 h-4 w-4" /> Code Editor
+                </TabsTrigger>
               </TabsList>
               
               <TabsContent value="details" className="space-y-4 mt-4">
@@ -305,6 +405,48 @@ const ProductManagement = () => {
                   </p>
                 </div>
               </TabsContent>
+              
+              <TabsContent value="code" className="space-y-4 mt-4">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-medium">Code Editor</h3>
+                    <Tabs value={codeEditorTab} onValueChange={setCodeEditorTab} className="w-auto">
+                      <TabsList>
+                        <TabsTrigger value="html">HTML</TabsTrigger>
+                        <TabsTrigger value="css">CSS</TabsTrigger>
+                        <TabsTrigger value="js">JavaScript</TabsTrigger>
+                      </TabsList>
+                    </Tabs>
+                  </div>
+                  
+                  <div className="border rounded-md">
+                    {codeEditorTab === "html" && (
+                      <CodeEditor 
+                        language="html" 
+                        value={newProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
+                        onChange={(value) => handleCodeChange("html", value)}
+                      />
+                    )}
+                    {codeEditorTab === "css" && (
+                      <CodeEditor 
+                        language="css" 
+                        value={newProduct.codeContent?.css || '/* Add your CSS styles here */'}
+                        onChange={(value) => handleCodeChange("css", value)}
+                      />
+                    )}
+                    {codeEditorTab === "js" && (
+                      <CodeEditor 
+                        language="javascript" 
+                        value={newProduct.codeContent?.js || '// Add your JavaScript code here'}
+                        onChange={(value) => handleCodeChange("js", value)}
+                      />
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Add custom HTML, CSS, and JavaScript for this product. This code can be embedded in content pages.
+                  </p>
+                </div>
+              </TabsContent>
             </Tabs>
             
             <DialogFooter className="mt-6">
@@ -405,10 +547,13 @@ const ProductManagement = () => {
                               
                               {selectedProduct && (
                                 <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-                                  <TabsList className="grid w-full grid-cols-3">
+                                  <TabsList className="grid w-full grid-cols-4">
                                     <TabsTrigger value="details">Basic Details</TabsTrigger>
                                     <TabsTrigger value="description">Description</TabsTrigger>
                                     <TabsTrigger value="files">Files & Downloads</TabsTrigger>
+                                    <TabsTrigger value="code">
+                                      <Code className="mr-2 h-4 w-4" /> Code Editor
+                                    </TabsTrigger>
                                   </TabsList>
                                   
                                   <TabsContent value="details" className="space-y-4 mt-4">
@@ -509,6 +654,48 @@ const ProductManagement = () => {
                                         value={selectedProduct.downloadUrl || ''}
                                         onChange={(e) => setSelectedProduct({...selectedProduct, downloadUrl: e.target.value})}
                                       />
+                                    </div>
+                                  </TabsContent>
+                                  
+                                  <TabsContent value="code" className="space-y-4 mt-4">
+                                    <div className="space-y-4">
+                                      <div className="flex justify-between items-center">
+                                        <h3 className="text-lg font-medium">Code Editor</h3>
+                                        <Tabs value={codeEditorTab} onValueChange={setCodeEditorTab} className="w-auto">
+                                          <TabsList>
+                                            <TabsTrigger value="html">HTML</TabsTrigger>
+                                            <TabsTrigger value="css">CSS</TabsTrigger>
+                                            <TabsTrigger value="js">JavaScript</TabsTrigger>
+                                          </TabsList>
+                                        </Tabs>
+                                      </div>
+                                      
+                                      <div className="border rounded-md">
+                                        {codeEditorTab === "html" && (
+                                          <CodeEditor 
+                                            language="html" 
+                                            value={selectedProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
+                                            onChange={(value) => handleCodeChange("html", value)}
+                                          />
+                                        )}
+                                        {codeEditorTab === "css" && (
+                                          <CodeEditor 
+                                            language="css" 
+                                            value={selectedProduct.codeContent?.css || '/* Add your CSS styles here */'}
+                                            onChange={(value) => handleCodeChange("css", value)}
+                                          />
+                                        )}
+                                        {codeEditorTab === "js" && (
+                                          <CodeEditor 
+                                            language="javascript" 
+                                            value={selectedProduct.codeContent?.js || '// Add your JavaScript code here'}
+                                            onChange={(value) => handleCodeChange("js", value)}
+                                          />
+                                        )}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                        Edit custom HTML, CSS, and JavaScript for this product.
+                                      </p>
                                     </div>
                                   </TabsContent>
                                 </Tabs>
