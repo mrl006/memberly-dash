@@ -371,8 +371,11 @@ const ProductManagement = () => {
       setNewProduct({
         ...newProduct,
         codeContent: {
-          ...newProduct.codeContent!,
-          [type]: value
+          ...newProduct,
+          codeContent: {
+            ...newProduct.codeContent!,
+            [type]: value
+          }
         }
       });
     }
@@ -544,21 +547,18 @@ const ProductManagement = () => {
                   <div className="border rounded-md">
                     {codeEditorTab === "html" && (
                       <CodeEditor 
-                        language="html" 
                         value={newProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
                         onChange={(value) => handleCodeChange("html", value)}
                       />
                     )}
                     {codeEditorTab === "css" && (
                       <CodeEditor 
-                        language="css" 
                         value={newProduct.codeContent?.css || '/* Add your CSS styles here */'}
                         onChange={(value) => handleCodeChange("css", value)}
                       />
                     )}
                     {codeEditorTab === "js" && (
                       <CodeEditor 
-                        language="javascript" 
                         value={newProduct.codeContent?.js || '// Add your JavaScript code here'}
                         onChange={(value) => handleCodeChange("js", value)}
                       />
@@ -806,21 +806,18 @@ const ProductManagement = () => {
                                       <div className="border rounded-md">
                                         {codeEditorTab === "html" && (
                                           <CodeEditor 
-                                            language="html" 
                                             value={selectedProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
                                             onChange={(value) => handleCodeChange("html", value)}
                                           />
                                         )}
                                         {codeEditorTab === "css" && (
                                           <CodeEditor 
-                                            language="css" 
                                             value={selectedProduct.codeContent?.css || '/* Add your CSS styles here */'}
                                             onChange={(value) => handleCodeChange("css", value)}
                                           />
                                         )}
                                         {codeEditorTab === "js" && (
                                           <CodeEditor 
-                                            language="javascript" 
                                             value={selectedProduct.codeContent?.js || '// Add your JavaScript code here'}
                                             onChange={(value) => handleCodeChange("js", value)}
                                           />
