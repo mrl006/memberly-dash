@@ -13,6 +13,8 @@ import {
   getSecuritySettings, 
   saveSecuritySettings,
   applyGeneralSettings,
+  fetchGeneralSettings,
+  fetchSecuritySettings,
   type GeneralSettings,
   type SecuritySettings
 } from "@/services/settingsService";
@@ -20,10 +22,21 @@ import {
 const Settings = () => {
   const [generalSettings, setGeneralSettings] = useState<GeneralSettings>(getGeneralSettings());
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>(getSecuritySettings());
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
-    setGeneralSettings(getGeneralSettings());
-    setSecuritySettings(getSecuritySettings());
+    const fetchSettings = async () => {
+      try {
+        await fetchGeneralSettings();
+        await fetchSecuritySettings();
+        setGeneralSettings(getGeneralSettings());
+        setSecuritySettings(getSecuritySettings());
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+      }
+    };
+    
+    fetchSettings();
   }, []);
 
   const handleGeneralChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -43,13 +56,27 @@ const Settings = () => {
     setSecuritySettings((prev) => ({ ...prev, [name]: checked }));
   };
 
-  const handleSaveGeneralSettings = () => {
-    saveGeneralSettings(generalSettings);
-    applyGeneralSettings();
+  const handleSaveGeneralSettings = async () => {
+    setIsSaving(true);
+    try {
+      await saveGeneralSettings(generalSettings);
+      applyGeneralSettings();
+    } catch (error) {
+      console.error("Error saving general settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleSaveSecuritySettings = () => {
-    saveSecuritySettings(securitySettings);
+  const handleSaveSecuritySettings = async () => {
+    setIsSaving(true);
+    try {
+      await saveSecuritySettings(securitySettings);
+    } catch (error) {
+      console.error("Error saving security settings:", error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -66,7 +93,6 @@ const Settings = () => {
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
         </TabsList>
 
-        {/* General Settings */}
         <TabsContent value="general">
           <Card>
             <CardHeader>
@@ -120,14 +146,25 @@ const Settings = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveGeneralSettings}>
-                <Save className="mr-2 h-4 w-4" /> Save Changes
+              <Button onClick={handleSaveGeneralSettings} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
         </TabsContent>
 
-        {/* Security Settings */}
         <TabsContent value="security">
           <Card>
             <CardHeader>
@@ -181,14 +218,25 @@ const Settings = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleSaveSecuritySettings}>
-                <Save className="mr-2 h-4 w-4" /> Save Changes
+              <Button onClick={handleSaveSecuritySettings} disabled={isSaving}>
+                {isSaving ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="mr-2 h-4 w-4" /> Save Changes
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
         </TabsContent>
 
-        {/* Integrations Settings */}
         <TabsContent value="integrations">
           <Card>
             <CardHeader>
@@ -222,7 +270,6 @@ const Settings = () => {
           </Card>
         </TabsContent>
 
-        {/* Appearance Settings */}
         <TabsContent value="appearance">
           <Card>
             <CardHeader>

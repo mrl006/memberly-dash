@@ -51,7 +51,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-import { getUsers, updateUser, deleteUser, toggleUserStatus, addUser, User } from "@/services/userService";
+import { getUsers, updateUser, deleteUser, toggleUserStatus, addUser, fetchUsers, User } from "@/services/userService";
 
 interface UserFormData {
   name: string;
@@ -62,7 +62,7 @@ interface UserFormData {
 }
 
 const UserManagement = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<User[]>(getUsers());
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -85,14 +85,14 @@ const UserManagement = () => {
   const { toast } = useToast();
   
   // Load users with error handling
-  const loadUsers = () => {
+  const loadUsers = async () => {
     setIsLoading(true);
     setHasError(false);
     
     try {
-      // Get users from our service which uses localStorage
-      const loadedUsers = getUsers();
-      setUsers(loadedUsers);
+      // Get users from our service
+      await fetchUsers();
+      setUsers(getUsers());
     } catch (error) {
       console.error("Failed to load users:", error);
       setHasError(true);
@@ -184,7 +184,7 @@ const UserManagement = () => {
     setFormData((prev) => ({ ...prev, subscription: value }));
   };
 
-  const handleAddUser = async (e: React.FormEvent) => {
+  const handleAddUser = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -200,7 +200,7 @@ const UserManagement = () => {
       });
       
       // Update local state to reflect new user
-      setUsers([...users, newUser]);
+      setUsers(getUsers());
       setIsAddUserOpen(false);
       resetForm();
       
@@ -220,7 +220,7 @@ const UserManagement = () => {
     }
   };
 
-  const handleEditUser = async (e: React.FormEvent) => {
+  const handleEditUser = (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm() || !selectedUser) return;
@@ -237,9 +237,7 @@ const UserManagement = () => {
       
       if (updatedUser) {
         // Update local state
-        setUsers(users.map((user) =>
-          user.id === selectedUser.id ? updatedUser : user
-        ));
+        setUsers(getUsers());
       }
       
       setIsEditUserOpen(false);
@@ -261,14 +259,14 @@ const UserManagement = () => {
     }
   };
 
-  const handleDeleteUser = async (userId: string) => {
+  const handleDeleteUser = (userId: string) => {
     try {
       // Delete user from our service
       const success = deleteUser(userId);
       
       if (success) {
         // Update local state
-        setUsers(users.filter((user) => user.id !== userId));
+        setUsers(getUsers());
         
         toast({
           title: "User Deleted",
@@ -291,16 +289,14 @@ const UserManagement = () => {
     }
   };
 
-  const handleToggleUserStatus = async (userId: string, currentStatus: string) => {
+  const handleToggleUserStatus = (userId: string) => {
     try {
       // Toggle user status in our service
       const updatedUser = toggleUserStatus(userId);
       
       if (updatedUser) {
         // Update local state
-        setUsers(users.map((user) =>
-          user.id === userId ? updatedUser : user
-        ));
+        setUsers(getUsers());
         
         toast({
           title: `User ${updatedUser.status === "active" ? "Activated" : "Deactivated"}`,
@@ -636,7 +632,7 @@ const UserManagement = () => {
                                 <Edit className="h-4 w-4 mr-2" />
                                 Edit User
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleToggleUserStatus(user.id, user.status)}>
+                              <DropdownMenuItem onClick={() => handleToggleUserStatus(user.id)}>
                                 {user.status === "active" ? (
                                   <>
                                     <X className="h-4 w-4 mr-2" />

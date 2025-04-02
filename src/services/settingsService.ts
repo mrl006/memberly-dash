@@ -30,6 +30,10 @@ const defaultSecuritySettings: SecuritySettings = {
   loginAttempts: "5",
 };
 
+// Internal state to cache settings
+let cachedGeneralSettings: GeneralSettings = {...defaultGeneralSettings};
+let cachedSecuritySettings: SecuritySettings = {...defaultSecuritySettings};
+
 // Get local general settings fallback
 const getLocalGeneralSettings = (): GeneralSettings => {
   try {
@@ -56,33 +60,47 @@ const getLocalSecuritySettings = (): SecuritySettings => {
   return defaultSecuritySettings;
 };
 
-// Get general settings
-export const getGeneralSettings = async (): Promise<GeneralSettings> => {
+// Get general settings - synchronous version for React state
+export const getGeneralSettings = (): GeneralSettings => {
+  return cachedGeneralSettings;
+};
+
+// Get general settings - async version for database operations
+export const fetchGeneralSettings = async (): Promise<GeneralSettings> => {
   try {
     const collection = await getSettingsCollection();
     if (!collection) {
-      return getLocalGeneralSettings();
+      const localSettings = getLocalGeneralSettings();
+      cachedGeneralSettings = localSettings;
+      return localSettings;
     }
     
     const settings = await collection.findOne({ type: 'general' });
     if (settings) {
-      return settings.data as GeneralSettings;
+      cachedGeneralSettings = settings.data as GeneralSettings;
+      return cachedGeneralSettings;
     } else {
       // If no settings in DB, save the defaults
       await collection.insertOne({ 
         type: 'general', 
         data: defaultGeneralSettings 
       });
+      cachedGeneralSettings = defaultGeneralSettings;
       return defaultGeneralSettings;
     }
   } catch (e) {
     console.error('Error retrieving general settings from MongoDB:', e);
-    return getLocalGeneralSettings();
+    const localSettings = getLocalGeneralSettings();
+    cachedGeneralSettings = localSettings;
+    return localSettings;
   }
 };
 
 // Save general settings
 export const saveGeneralSettings = async (settings: GeneralSettings): Promise<void> => {
+  // Update cache immediately
+  cachedGeneralSettings = settings;
+
   try {
     const collection = await getSettingsCollection();
     if (!collection) {
@@ -121,33 +139,47 @@ export const saveGeneralSettings = async (settings: GeneralSettings): Promise<vo
   }
 };
 
-// Get security settings
-export const getSecuritySettings = async (): Promise<SecuritySettings> => {
+// Get security settings - synchronous version for React state
+export const getSecuritySettings = (): SecuritySettings => {
+  return cachedSecuritySettings;
+};
+
+// Get security settings - async version for database operations
+export const fetchSecuritySettings = async (): Promise<SecuritySettings> => {
   try {
     const collection = await getSettingsCollection();
     if (!collection) {
-      return getLocalSecuritySettings();
+      const localSettings = getLocalSecuritySettings();
+      cachedSecuritySettings = localSettings;
+      return localSettings;
     }
     
     const settings = await collection.findOne({ type: 'security' });
     if (settings) {
-      return settings.data as SecuritySettings;
+      cachedSecuritySettings = settings.data as SecuritySettings;
+      return cachedSecuritySettings;
     } else {
       // If no settings in DB, save the defaults
       await collection.insertOne({ 
         type: 'security', 
         data: defaultSecuritySettings 
       });
+      cachedSecuritySettings = defaultSecuritySettings;
       return defaultSecuritySettings;
     }
   } catch (e) {
     console.error('Error retrieving security settings from MongoDB:', e);
-    return getLocalSecuritySettings();
+    const localSettings = getLocalSecuritySettings();
+    cachedSecuritySettings = localSettings;
+    return localSettings;
   }
 };
 
 // Save security settings
 export const saveSecuritySettings = async (settings: SecuritySettings): Promise<void> => {
+  // Update cache immediately
+  cachedSecuritySettings = settings;
+
   try {
     const collection = await getSettingsCollection();
     if (!collection) {
@@ -187,8 +219,8 @@ export const saveSecuritySettings = async (settings: SecuritySettings): Promise<
 };
 
 // Apply general settings throughout the application
-export const applyGeneralSettings = async (): Promise<void> => {
-  const settings = await getGeneralSettings();
+export const applyGeneralSettings = (): void => {
+  const settings = getGeneralSettings();
   
   // Update document title with site name
   document.title = settings.siteName;
@@ -200,9 +232,9 @@ export const applyGeneralSettings = async (): Promise<void> => {
 // Initialize the database connection and settings on app startup
 export const initializeSettings = async (): Promise<void> => {
   // Attempt to load settings from database
-  const generalSettings = await getGeneralSettings();
-  await getSecuritySettings(); // Cache security settings
+  await fetchGeneralSettings();
+  await fetchSecuritySettings();
   
   // Apply the general settings to the app
-  document.title = generalSettings.siteName;
+  applyGeneralSettings();
 };
