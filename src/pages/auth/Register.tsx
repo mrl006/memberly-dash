@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { addUser } from "@/services/userService";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -40,15 +41,32 @@ const Register = () => {
     
     setIsLoading(true);
     
-    // For demo purposes, simulate registration
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // Add user to our user service
+      addUser({
+        name,
+        email,
+        subscription: "Basic" // Default subscription for new users
+      });
+      
       toast({
         title: "Registration Successful",
         description: "Your account has been created. You can now log in.",
       });
-      navigate("/login");
-    }, 1500);
+      
+      // Redirect to login page after a short delay
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
+    } catch (error) {
+      toast({
+        title: "Registration Failed",
+        description: "There was a problem creating your account. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

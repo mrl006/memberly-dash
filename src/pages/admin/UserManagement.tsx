@@ -51,59 +51,7 @@ import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { ErrorBoundary } from "@/components/ui/error-boundary";
-
-// Dummy user data
-const initialUsers = [
-  {
-    id: "1",
-    name: "John Doe",
-    email: "john.doe@example.com",
-    subscription: "Professional",
-    status: "active",
-    joined: "Apr 23, 2023",
-  },
-  {
-    id: "2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    subscription: "Basic",
-    status: "active",
-    joined: "May 12, 2023",
-  },
-  {
-    id: "3",
-    name: "Bob Johnson",
-    email: "bob.johnson@example.com",
-    subscription: "Professional",
-    status: "inactive",
-    joined: "Jan 5, 2023",
-  },
-  {
-    id: "4",
-    name: "Alice Brown",
-    email: "alice.brown@example.com",
-    subscription: "Premium",
-    status: "active",
-    joined: "Mar 18, 2023",
-  },
-  {
-    id: "5",
-    name: "Charlie Davis",
-    email: "charlie.davis@example.com",
-    subscription: "Basic",
-    status: "expired",
-    joined: "Feb 27, 2023",
-  },
-];
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  subscription: string;
-  status: string;
-  joined: string;
-}
+import { getUsers, updateUser, deleteUser, toggleUserStatus, addUser, User } from "@/services/userService";
 
 interface UserFormData {
   name: string;
@@ -137,32 +85,33 @@ const UserManagement = () => {
   const { toast } = useToast();
   
   // Load users with error handling
-  useEffect(() => {
-    const loadUsers = async () => {
-      setIsLoading(true);
-      setHasError(false);
-      
-      try {
-        // In a real app, this would be an API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setUsers(initialUsers);
-      } catch (error) {
-        console.error("Failed to load users:", error);
-        setHasError(true);
-        setErrorMessage(error instanceof Error ? error.message : "Failed to load users");
-        
-        toast({
-          title: "Error loading users",
-          description: "Please try refreshing the page.",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadUsers = () => {
+    setIsLoading(true);
+    setHasError(false);
     
+    try {
+      // Get users from our service which uses localStorage
+      const loadedUsers = getUsers();
+      setUsers(loadedUsers);
+    } catch (error) {
+      console.error("Failed to load users:", error);
+      setHasError(true);
+      setErrorMessage(error instanceof Error ? error.message : "Failed to load users");
+      
+      toast({
+        title: "Error loading users",
+        description: "Please try refreshing the page.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  // Load users on component mount and whenever the user list might change
+  useEffect(() => {
     loadUsers();
-  }, [toast]);
+  }, []);
   
   // Filter users based on search term and filters
   const filteredUsers = users.filter(
@@ -243,22 +192,14 @@ const UserManagement = () => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      const newUser: User = {
-        id: (users.length + 1).toString(),
+      // Add user to our service
+      const newUser = addUser({
         name: formData.name,
         email: formData.email,
         subscription: formData.subscription,
-        status: "active",
-        joined: new Date().toLocaleDateString('en-US', { 
-          month: 'short', 
-          day: 'numeric', 
-          year: 'numeric' 
-        }),
-      };
+      });
       
+      // Update local state to reflect new user
       setUsers([...users, newUser]);
       setIsAddUserOpen(false);
       resetForm();
@@ -287,21 +228,20 @@ const UserManagement = () => {
     setLoading(true);
     
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Update user in our service
+      const updatedUser = updateUser(selectedUser.id, {
+        name: formData.name,
+        email: formData.email,
+        subscription: formData.subscription,
+      });
       
-      const updatedUsers = users.map((user) =>
-        user.id === selectedUser.id
-          ? {
-              ...user,
-              name: formData.name,
-              email: formData.email,
-              subscription: formData.subscription,
-            }
-          : user
-      );
+      if (updatedUser) {
+        // Update local state
+        setUsers(users.map((user) =>
+          user.id === selectedUser.id ? updatedUser : user
+        ));
+      }
       
-      setUsers(updatedUsers);
       setIsEditUserOpen(false);
       resetForm();
       
@@ -323,16 +263,24 @@ const UserManagement = () => {
 
   const handleDeleteUser = async (userId: string) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Delete user from our service
+      const success = deleteUser(userId);
       
-      const updatedUsers = users.filter((user) => user.id !== userId);
-      setUsers(updatedUsers);
-      
-      toast({
-        title: "User Deleted",
-        description: "User has been permanently removed.",
-      });
+      if (success) {
+        // Update local state
+        setUsers(users.filter((user) => user.id !== userId));
+        
+        toast({
+          title: "User Deleted",
+          description: "User has been permanently removed.",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "User not found or could not be deleted.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error deleting user:", error);
       toast({
@@ -345,23 +293,26 @@ const UserManagement = () => {
 
   const handleToggleUserStatus = async (userId: string, currentStatus: string) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Toggle user status in our service
+      const updatedUser = toggleUserStatus(userId);
       
-      const newStatus = currentStatus === "active" ? "inactive" : "active";
-      
-      const updatedUsers = users.map((user) =>
-        user.id === userId
-          ? { ...user, status: newStatus }
-          : user
-      );
-      
-      setUsers(updatedUsers);
-      
-      toast({
-        title: `User ${newStatus === "active" ? "Activated" : "Deactivated"}`,
-        description: `User status has been updated to ${newStatus}.`,
-      });
+      if (updatedUser) {
+        // Update local state
+        setUsers(users.map((user) =>
+          user.id === userId ? updatedUser : user
+        ));
+        
+        toast({
+          title: `User ${updatedUser.status === "active" ? "Activated" : "Deactivated"}`,
+          description: `User status has been updated to ${updatedUser.status}.`,
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "User not found or could not be updated.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error toggling user status:", error);
       toast({
