@@ -195,7 +195,91 @@ class LocalStorageCollection implements Collection {
 let usersCollection: Collection | null = null;
 let settingsCollection: Collection | null = null;
 let ticketsCollection: Collection | null = null;
+let productsCollection: Collection | null = null;
+let couponsCollection: Collection | null = null;
+let analyticsCollection: Collection | null = null;
 let isInitialized = false;
+
+// Initialize default data if collection is empty
+const initializeDefaultData = async () => {
+  // Initialize default products if none exist
+  const products = await productsCollection?.find({}).toArray();
+  if (products && products.length === 0) {
+    const defaultProducts = [
+      { id: "1", name: "Basic Membership", price: 9.99, type: "subscription", status: "active", sales: 120 },
+      { id: "2", name: "Premium Membership", price: 19.99, type: "subscription", status: "active", sales: 85 },
+      { id: "3", name: "Enterprise Membership", price: 49.99, type: "subscription", status: "active", sales: 42 },
+      { id: "4", name: "E-Book: Getting Started", price: 4.99, type: "digital", status: "active", sales: 67 },
+    ];
+    
+    for (const product of defaultProducts) {
+      await productsCollection?.insertOne(product);
+    }
+  }
+  
+  // Initialize default coupons if none exist
+  const coupons = await couponsCollection?.find({}).toArray();
+  if (coupons && coupons.length === 0) {
+    const defaultCoupons = [
+      { id: 1, code: "WELCOME20", discount: "20%", discountType: "percentage", discountValue: 20, expires: "2023-12-31", usage: "10/100", maxUses: 100, currentUses: 10 },
+      { id: 2, code: "SUMMER50", discount: "50%", discountType: "percentage", discountValue: 50, expires: "2023-09-30", usage: "45/50", maxUses: 50, currentUses: 45 },
+      { id: 3, code: "FLAT10", discount: "$10.00", discountType: "fixed", discountValue: 10, expires: "2023-10-15", usage: "23/Unlimited", maxUses: "Unlimited", currentUses: 23 },
+    ];
+    
+    for (const coupon of defaultCoupons) {
+      await couponsCollection?.insertOne(coupon);
+    }
+  }
+  
+  // Initialize analytics data if none exists
+  const analytics = await analyticsCollection?.find({}).toArray();
+  if (analytics && analytics.length === 0) {
+    const currentDate = new Date();
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    
+    // Create 7 months of revenue data
+    const revenueData = [];
+    for (let i = 0; i < 7; i++) {
+      const monthName = new Date(year, month - 6 + i, 1).toLocaleString('default', { month: 'short' });
+      revenueData.push({
+        name: monthName,
+        total: Math.floor(Math.random() * 3000) + 1000 // Random revenue between 1000-4000
+      });
+    }
+    
+    // Create subscription plan distribution
+    const subscriptionPlans = [
+      { name: "Basic", value: 30 },
+      { name: "Standard", value: 45 },
+      { name: "Premium", value: 25 }
+    ];
+    
+    // Create weekly user activity
+    const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    const userActivity = weekDays.map(day => ({
+      name: day,
+      active: Math.floor(Math.random() * 100) + 100 // Random active users between 100-200
+    }));
+    
+    // Overall metrics
+    const overallMetrics = {
+      totalRevenue: revenueData.reduce((acc, curr) => acc + curr.total, 0),
+      activeSubscriptions: Math.floor(Math.random() * 300) + 200,
+      totalMembers: Math.floor(Math.random() * 800) + 500,
+      churnRate: (Math.random() * 3 + 1).toFixed(1)
+    };
+    
+    await analyticsCollection?.insertOne({
+      id: "dashboard-data",
+      revenueData,
+      subscriptionPlans,
+      userActivity,
+      overallMetrics,
+      lastUpdated: new Date().toISOString()
+    });
+  }
+};
 
 // Initialize storage
 export const initDatabase = async (): Promise<boolean> => {
@@ -206,7 +290,15 @@ export const initDatabase = async (): Promise<boolean> => {
     usersCollection = new LocalStorageCollection('users');
     settingsCollection = new LocalStorageCollection('settings');
     ticketsCollection = new LocalStorageCollection('tickets');
+    productsCollection = new LocalStorageCollection('products');
+    couponsCollection = new LocalStorageCollection('coupons');
+    analyticsCollection = new LocalStorageCollection('analytics');
+    
     isInitialized = true;
+    
+    // Initialize default data
+    await initializeDefaultData();
+    
     return true;
   } catch (error) {
     console.error('Database initialization error:', error);
@@ -243,11 +335,65 @@ export const getTicketsCollection = async (): Promise<Collection | null> => {
   return ticketsCollection;
 };
 
+// Get products collection
+export const getProductsCollection = async (): Promise<Collection | null> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  return productsCollection;
+};
+
+// Get coupons collection
+export const getCouponsCollection = async (): Promise<Collection | null> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  return couponsCollection;
+};
+
+// Get analytics collection
+export const getAnalyticsCollection = async (): Promise<Collection | null> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  return analyticsCollection;
+};
+
+// Update dashboard analytics data
+export const updateDashboardAnalytics = async (newData: any): Promise<boolean> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  
+  try {
+    const analytics = await analyticsCollection?.findOne({ id: "dashboard-data" });
+    if (analytics) {
+      await analyticsCollection?.updateOne(
+        { id: "dashboard-data" },
+        { $set: { ...newData, lastUpdated: new Date().toISOString() } }
+      );
+    } else {
+      await analyticsCollection?.insertOne({
+        id: "dashboard-data",
+        ...newData,
+        lastUpdated: new Date().toISOString()
+      });
+    }
+    return true;
+  } catch (error) {
+    console.error('Error updating dashboard analytics:', error);
+    return false;
+  }
+};
+
 // Close database connection (useful for cleanup)
 export const closeDatabase = async (): Promise<void> => {
   isInitialized = false;
   usersCollection = null;
   settingsCollection = null;
   ticketsCollection = null;
+  productsCollection = null;
+  couponsCollection = null;
+  analyticsCollection = null;
   console.log('Disconnected from local database');
 };

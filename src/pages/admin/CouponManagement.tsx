@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,15 +11,15 @@ import {
   DialogFooter, 
   DialogHeader, 
   DialogTitle, 
-  DialogTrigger, 
-  DialogClose 
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getCouponsCollection } from "@/services/dbService";
+import { Skeleton } from "@/components/ui/skeleton";
 
-// Coupon interface
 interface Coupon {
   id: number;
   code: string;
@@ -33,17 +32,10 @@ interface Coupon {
   currentUses: number;
 }
 
-// Mock coupon data
-const initialCoupons: Coupon[] = [
-  { id: 1, code: "WELCOME20", discount: "20%", discountType: "percentage", discountValue: 20, expires: "2023-12-31", usage: "10/100", maxUses: 100, currentUses: 10 },
-  { id: 2, code: "SUMMER50", discount: "50%", discountType: "percentage", discountValue: 50, expires: "2023-09-30", usage: "45/50", maxUses: 50, currentUses: 45 },
-  { id: 3, code: "FLAT10", discount: "$10.00", discountType: "fixed", discountValue: 10, expires: "2023-10-15", usage: "23/Unlimited", maxUses: "Unlimited", currentUses: 23 },
-  { id: 4, code: "NEWUSER", discount: "15%", discountType: "percentage", discountValue: 15, expires: "Never", usage: "156/Unlimited", maxUses: "Unlimited", currentUses: 156 },
-];
-
 const CouponManagement = () => {
-  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+  const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -58,11 +50,35 @@ const CouponManagement = () => {
   });
   const { toast } = useToast();
 
+  useEffect(() => {
+    const fetchCoupons = async () => {
+      try {
+        setIsLoading(true);
+        const couponsCollection = await getCouponsCollection();
+        if (couponsCollection) {
+          const data = await couponsCollection.find({}).toArray();
+          setCoupons(data);
+        }
+      } catch (error) {
+        console.error("Error fetching coupons:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load coupons",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCoupons();
+  }, [toast]);
+
   const filteredCoupons = coupons.filter((coupon) =>
     coupon.code.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddCoupon = () => {
+  const handleAddCoupon = async () => {
     if (!newCoupon.code || !newCoupon.discountValue) {
       toast({
         title: "Error",
@@ -72,17 +88,16 @@ const CouponManagement = () => {
       return;
     }
 
-    const formattedDiscount = newCoupon.discountType === "percentage" 
-      ? `${newCoupon.discountValue}%` 
-      : `$${newCoupon.discountValue.toFixed(2)}`;
-    
-    const formattedUsage = `0/${newCoupon.maxUses === "Unlimited" ? "Unlimited" : newCoupon.maxUses}`;
-    
-    const newId = Math.max(...coupons.map(c => c.id)) + 1;
-    
-    setCoupons([
-      ...coupons,
-      {
+    try {
+      const formattedDiscount = newCoupon.discountType === "percentage" 
+        ? `${newCoupon.discountValue}%` 
+        : `$${newCoupon.discountValue.toFixed(2)}`;
+      
+      const formattedUsage = `0/${newCoupon.maxUses === "Unlimited" ? "Unlimited" : newCoupon.maxUses}`;
+      
+      const newId = coupons.length > 0 ? Math.max(...coupons.map(c => c.id)) + 1 : 1;
+      
+      const couponToAdd = {
         id: newId,
         code: newCoupon.code,
         discount: formattedDiscount,
@@ -92,69 +107,117 @@ const CouponManagement = () => {
         usage: formattedUsage,
         maxUses: newCoupon.maxUses || "Unlimited",
         currentUses: 0
+      };
+      
+      const couponsCollection = await getCouponsCollection();
+      if (couponsCollection) {
+        await couponsCollection.insertOne(couponToAdd);
+        setCoupons([...coupons, couponToAdd]);
+        
+        toast({
+          title: "Coupon Added",
+          description: `Coupon ${newCoupon.code} has been created successfully.`
+        });
+        
+        setNewCoupon({
+          code: "",
+          discountType: "percentage",
+          discountValue: 10,
+          expires: "",
+          maxUses: 100,
+          currentUses: 0
+        });
+        
+        setIsAddDialogOpen(false);
       }
-    ]);
-    
-    toast({
-      title: "Coupon Added",
-      description: `Coupon ${newCoupon.code} has been created successfully.`
-    });
-    
-    setNewCoupon({
-      code: "",
-      discountType: "percentage",
-      discountValue: 10,
-      expires: "",
-      maxUses: 100,
-      currentUses: 0
-    });
-    
-    setIsAddDialogOpen(false);
+    } catch (error) {
+      console.error("Error adding coupon:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add coupon",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleEditCoupon = () => {
+  const handleEditCoupon = async () => {
     if (!currentCoupon) return;
     
-    const formattedDiscount = currentCoupon.discountType === "percentage" 
-      ? `${currentCoupon.discountValue}%` 
-      : `$${currentCoupon.discountValue.toFixed(2)}`;
-    
-    const formattedUsage = `${currentCoupon.currentUses}/${currentCoupon.maxUses === "Unlimited" ? "Unlimited" : currentCoupon.maxUses}`;
-    
-    setCoupons(prevCoupons => 
-      prevCoupons.map(coupon => 
-        coupon.id === currentCoupon.id 
-          ? {
-              ...currentCoupon,
-              discount: formattedDiscount,
-              usage: formattedUsage
-            }
-          : coupon
-      )
-    );
-    
-    toast({
-      title: "Coupon Updated",
-      description: `Coupon ${currentCoupon.code} has been updated successfully.`
-    });
-    
-    setIsEditDialogOpen(false);
+    try {
+      const formattedDiscount = currentCoupon.discountType === "percentage" 
+        ? `${currentCoupon.discountValue}%` 
+        : `$${currentCoupon.discountValue.toFixed(2)}`;
+      
+      const formattedUsage = `${currentCoupon.currentUses}/${currentCoupon.maxUses === "Unlimited" ? "Unlimited" : currentCoupon.maxUses}`;
+      
+      const updatedCoupon = {
+        ...currentCoupon,
+        discount: formattedDiscount,
+        usage: formattedUsage
+      };
+      
+      const couponsCollection = await getCouponsCollection();
+      if (couponsCollection) {
+        await couponsCollection.updateOne(
+          { id: currentCoupon.id },
+          { $set: updatedCoupon }
+        );
+        
+        setCoupons(prevCoupons => 
+          prevCoupons.map(coupon => 
+            coupon.id === currentCoupon.id ? updatedCoupon : coupon
+          )
+        );
+        
+        toast({
+          title: "Coupon Updated",
+          description: `Coupon ${currentCoupon.code} has been updated successfully.`
+        });
+        
+        setIsEditDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error updating coupon:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update coupon",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteCoupon = () => {
+  const handleDeleteCoupon = async () => {
     if (!currentCoupon) return;
     
-    setCoupons(prevCoupons => 
-      prevCoupons.filter(coupon => coupon.id !== currentCoupon.id)
-    );
-    
-    toast({
-      title: "Coupon Deleted",
-      description: `Coupon ${currentCoupon.code} has been deleted successfully.`
-    });
-    
-    setIsDeleteDialogOpen(false);
+    try {
+      const couponsCollection = await getCouponsCollection();
+      if (couponsCollection) {
+        await couponsCollection.deleteOne({ id: currentCoupon.id });
+        
+        setCoupons(prevCoupons => 
+          prevCoupons.filter(coupon => coupon.id !== currentCoupon.id)
+        );
+        
+        toast({
+          title: "Coupon Deleted",
+          description: `Coupon ${currentCoupon.code} has been deleted successfully.`
+        });
+        
+        setIsDeleteDialogOpen(false);
+      }
+    } catch (error) {
+      console.error("Error deleting coupon:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete coupon",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (isLoading) {
+    return <CouponSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -503,6 +566,61 @@ const CouponManagement = () => {
           <div className="text-sm text-muted-foreground">
             Showing {filteredCoupons.length} of {coupons.length} coupons
           </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+};
+
+const CouponSkeleton = () => {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold tracking-tight">Coupon Management</h1>
+        <Skeleton className="h-10 w-32" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-48 mb-2" />
+          <Skeleton className="h-4 w-64" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-10 w-64 mb-4" />
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead><Skeleton className="h-4 w-8" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-24" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-20" /></TableHead>
+                  <TableHead><Skeleton className="h-4 w-16" /></TableHead>
+                  <TableHead className="text-right"><Skeleton className="h-4 w-16 ml-auto" /></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {[1, 2, 3, 4].map((i) => (
+                  <TableRow key={i}>
+                    <TableCell><Skeleton className="h-4 w-8" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                        <Skeleton className="h-8 w-8 rounded-full" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Skeleton className="h-4 w-48" />
         </CardFooter>
       </Card>
     </div>

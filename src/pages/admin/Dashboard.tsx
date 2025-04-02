@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { 
   BarChart, 
@@ -15,36 +16,50 @@ import {
   Line
 } from "recharts";
 import { Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
+import { getAnalyticsCollection } from "@/services/dbService";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface DashboardData {
+  revenueData: Array<{name: string, total: number}>;
+  subscriptionPlans: Array<{name: string, value: number}>;
+  userActivity: Array<{name: string, active: number}>;
+  overallMetrics: {
+    totalRevenue: number;
+    activeSubscriptions: number;
+    totalMembers: number;
+    churnRate: string;
+  };
+}
 
 const Dashboard = () => {
-  // Dummy data for charts
-  const salesData = [
-    { name: "Jan", total: 1500 },
-    { name: "Feb", total: 2300 },
-    { name: "Mar", total: 3200 },
-    { name: "Apr", total: 2800 },
-    { name: "May", total: 4100 },
-    { name: "Jun", total: 5400 },
-    { name: "Jul", total: 4800 },
-  ];
-
-  const subscriptionPlanData = [
-    { name: "Basic", value: 30 },
-    { name: "Standard", value: 45 },
-    { name: "Premium", value: 25 },
-  ];
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
-  const userActivityData = [
-    { name: "Mon", active: 120 },
-    { name: "Tue", active: 145 },
-    { name: "Wed", active: 160 },
-    { name: "Thu", active: 180 },
-    { name: "Fri", active: 190 },
-    { name: "Sat", active: 130 },
-    { name: "Sun", active: 110 },
-  ];
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setIsLoading(true);
+        const analyticsCollection = await getAnalyticsCollection();
+        if (analyticsCollection) {
+          const data = await analyticsCollection.findOne({ id: "dashboard-data" });
+          if (data) {
+            setDashboardData(data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (isLoading) {
+    return <DashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-6">
@@ -63,7 +78,7 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$24,312.59</div>
+            <div className="text-2xl font-bold">${dashboardData?.overallMetrics.totalRevenue?.toLocaleString() || "0"}</div>
             <div className="flex items-center text-sm text-green-600 pt-1">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+18.2% from last month</span>
@@ -77,7 +92,7 @@ const Dashboard = () => {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">437</div>
+            <div className="text-2xl font-bold">{dashboardData?.overallMetrics.activeSubscriptions || "0"}</div>
             <div className="flex items-center text-sm text-green-600 pt-1">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+4.3% from last month</span>
@@ -91,7 +106,7 @@ const Dashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,274</div>
+            <div className="text-2xl font-bold">{dashboardData?.overallMetrics.totalMembers || "0"}</div>
             <div className="flex items-center text-sm text-green-600 pt-1">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+12.7% from last month</span>
@@ -105,7 +120,7 @@ const Dashboard = () => {
             <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2.4%</div>
+            <div className="text-2xl font-bold">{dashboardData?.overallMetrics.churnRate || "0"}%</div>
             <div className="flex items-center text-sm text-red-600 pt-1">
               <ArrowUpRight className="mr-1 h-4 w-4" />
               <span>+0.3% from last month</span>
@@ -123,7 +138,7 @@ const Dashboard = () => {
           <CardContent className="pl-2">
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
+                <BarChart data={dashboardData?.revenueData || []}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis 
                     dataKey="name" 
@@ -156,14 +171,14 @@ const Dashboard = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={subscriptionPlanData}
+                    data={dashboardData?.subscriptionPlans || []}
                     innerRadius={60}
                     outerRadius={90}
                     paddingAngle={5}
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {subscriptionPlanData.map((entry, index) => (
+                    {(dashboardData?.subscriptionPlans || []).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -183,7 +198,7 @@ const Dashboard = () => {
         <CardContent className="pl-2">
           <div className="h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={userActivityData}>
+              <LineChart data={dashboardData?.userActivity || []}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
                 <YAxis />
@@ -199,6 +214,66 @@ const Dashboard = () => {
               </LineChart>
             </ResponsiveContainer>
           </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+const DashboardSkeleton = () => {
+  return (
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Overview of your membership platform's performance.
+        </p>
+      </div>
+
+      {/* Stats Overview Skeleton */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-4 rounded-full" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-24 mb-2" />
+              <Skeleton className="h-4 w-32" />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Charts Skeleton */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+        <Card className="lg:col-span-4">
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full" />
+          </CardContent>
+        </Card>
+        
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent>
+            <Skeleton className="h-[300px] w-full rounded-full" />
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* User Activity Chart Skeleton */}
+      <Card>
+        <CardHeader>
+          <Skeleton className="h-6 w-36" />
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[300px] w-full" />
         </CardContent>
       </Card>
     </div>
