@@ -13,7 +13,8 @@ import {
   X,
   Bell,
   Search,
-  BarChart
+  BarChart,
+  Key
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -83,6 +84,10 @@ const AdminLayout = () => {
             <NavLink to="/admin/products" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
               <ShoppingBag size={20} />
               <span>Products</span>
+            </NavLink>
+            <NavLink to="/admin/api-keys" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+              <Key size={20} />
+              <span>API Keys</span>
             </NavLink>
             <NavLink to="/admin/coupons" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
               <Tags size={20} />

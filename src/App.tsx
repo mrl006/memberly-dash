@@ -1,85 +1,98 @@
-
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import AuthLayout from "./layouts/AuthLayout";
+import {
+  createBrowserRouter,
+  RouterProvider,
+} from "react-router-dom";
+import "./App.css";
 import AdminLayout from "./layouts/AdminLayout";
 import MemberLayout from "./layouts/MemberLayout";
-
-// Auth pages
-import Login from "./pages/auth/Login";
-import Register from "./pages/auth/Register";
-import ForgotPassword from "./pages/auth/ForgotPassword";
-
-// Admin pages
-import AdminDashboard from "./pages/admin/Dashboard";
-import UserManagement from "./pages/admin/UserManagement";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import HomePage from "./pages/HomePage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import UsersPage from "./pages/admin/UsersPage";
+import ProductsPage from "./pages/admin/ProductsPage";
+import CouponsPage from "./pages/admin/CouponsPage";
+import SupportPage from "./pages/admin/SupportPage";
+import SettingsPage from "./pages/admin/SettingsPage";
+import MemberDashboard from "./pages/member/MemberDashboard";
+import MemberProfile from "./pages/member/MemberProfile";
 import ProductManagement from "./pages/admin/ProductManagement";
-import CouponManagement from "./pages/admin/CouponManagement";
-import SupportTickets from "./pages/admin/SupportTickets";
-import Settings from "./pages/admin/Settings";
 import DashboardSettings from "./pages/admin/DashboardSettings";
 
-// Member pages
-import MemberDashboard from "./pages/member/Dashboard";
-import Profile from "./pages/member/Profile";
-import Subscriptions from "./pages/member/Subscriptions";
-import Downloads from "./pages/member/Downloads";
-import Support from "./pages/member/Support";
-import AccessProducts from "./pages/member/AccessProducts";
+// Add the import for the ApiKeyManagement component
+import ApiKeyManagement from "./pages/admin/ApiKeyManagement";
 
-// Misc pages
-import NotFound from "./pages/NotFound";
-import LandingPage from "./pages/LandingPage";
+function App() {
+  const router = createBrowserRouter([
+    {
+      path: "/",
+      element: <HomePage />,
+    },
+    {
+      path: "/login",
+      element: <LoginPage />,
+    },
+    {
+      path: "/register",
+      element: <RegisterPage />,
+    },
+    {
+      path: "/admin",
+      element: <AdminLayout />,
+      children: [
+        {
+          index: true,
+          element: <AdminDashboard />,
+        },
+        {
+          path: "dashboard-settings",
+          element: <DashboardSettings />,
+        },
+        {
+          path: "users",
+          element: <UsersPage />,
+        },
+        {
+          path: "products",
+          element: <ProductManagement />,
+        },
+        {
+          path: "api-keys", 
+          element: <ApiKeyManagement />
+        },
+        {
+          path: "coupons",
+          element: <CouponsPage />,
+        },
+        {
+          path: "support",
+          element: <SupportPage />,
+        },
+        {
+          path: "settings",
+          element: <SettingsPage />,
+        },
+      ],
+    },
+    {
+      path: "/member",
+      element: <MemberLayout />,
+      children: [
+        {
+          index: true,
+          element: <MemberDashboard />,
+        },
+        {
+          path: "profile",
+          element: <MemberProfile />,
+        },
+      ],
+    },
+  ]);
 
-const queryClient = new QueryClient();
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<LandingPage />} />
-          
-          {/* Auth routes */}
-          <Route element={<AuthLayout />}>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-          </Route>
-
-          {/* Admin routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="products" element={<ProductManagement />} />
-            <Route path="coupons" element={<CouponManagement />} />
-            <Route path="support" element={<SupportTickets />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="dashboard-settings" element={<DashboardSettings />} />
-          </Route>
-
-          {/* Member routes */}
-          <Route path="/member" element={<MemberLayout />}>
-            <Route index element={<MemberDashboard />} />
-            <Route path="profile" element={<Profile />} />
-            <Route path="subscriptions" element={<Subscriptions />} />
-            <Route path="downloads" element={<Downloads />} />
-            <Route path="support" element={<Support />} />
-            <Route path="access-products" element={<AccessProducts />} />
-          </Route>
-
-          {/* Not found route */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+  return (
+    <RouterProvider router={router} />
+  );
+}
 
 export default App;
