@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 // Interface for collection-like operations to match MongoDB API
@@ -198,6 +197,7 @@ let ticketsCollection: Collection | null = null;
 let productsCollection: Collection | null = null;
 let couponsCollection: Collection | null = null;
 let analyticsCollection: Collection | null = null;
+let purchasesCollection: Collection | null = null; // New collection for tracking purchases
 let isInitialized = false;
 
 // Initialize default data if collection is empty
@@ -279,6 +279,21 @@ const initializeDefaultData = async () => {
       lastUpdated: new Date().toISOString()
     });
   }
+  
+  // Initialize default purchases if none exist
+  const purchases = await purchasesCollection?.find({}).toArray();
+  if (purchases && purchases.length === 0) {
+    // Create some default purchases for demo purposes
+    const defaultPurchases = [
+      { id: "1", userId: "1", productId: "2", purchaseDate: new Date().toISOString(), status: "active" },
+      { id: "2", userId: "2", productId: "1", purchaseDate: new Date().toISOString(), status: "active" },
+      { id: "3", userId: "3", productId: "4", purchaseDate: new Date().toISOString(), status: "active" },
+    ];
+    
+    for (const purchase of defaultPurchases) {
+      await purchasesCollection?.insertOne(purchase);
+    }
+  }
 };
 
 // Initialize storage
@@ -293,6 +308,7 @@ export const initDatabase = async (): Promise<boolean> => {
     productsCollection = new LocalStorageCollection('products');
     couponsCollection = new LocalStorageCollection('coupons');
     analyticsCollection = new LocalStorageCollection('analytics');
+    purchasesCollection = new LocalStorageCollection('purchases'); // Initialize the new collection
     
     isInitialized = true;
     
@@ -359,6 +375,84 @@ export const getAnalyticsCollection = async (): Promise<Collection | null> => {
   return analyticsCollection;
 };
 
+// Get purchases collection
+export const getPurchasesCollection = async (): Promise<Collection | null> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  return purchasesCollection;
+};
+
+// Check if a product has been purchased
+export const isProductPurchased = async (productId: string | number): Promise<boolean> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  
+  try {
+    const purchases = await purchasesCollection?.find({ productId: productId.toString() }).toArray();
+    return purchases && purchases.length > 0;
+  } catch (error) {
+    console.error('Error checking if product is purchased:', error);
+    return false;
+  }
+};
+
+// Get user purchased products
+export const getUserPurchasedProducts = async (userId: string | number): Promise<any[]> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  
+  try {
+    const purchases = await purchasesCollection?.find({ userId: userId.toString() }).toArray();
+    if (!purchases || purchases.length === 0) {
+      return [];
+    }
+    
+    const productIds = purchases.map(purchase => purchase.productId);
+    const products = [];
+    
+    for (const productId of productIds) {
+      const product = await productsCollection?.findOne({ id: productId });
+      if (product) {
+        products.push({
+          ...product,
+          purchaseInfo: purchases.find(p => p.productId === productId)
+        });
+      }
+    }
+    
+    return products;
+  } catch (error) {
+    console.error('Error getting user purchased products:', error);
+    return [];
+  }
+};
+
+// Add a purchase record
+export const addPurchase = async (userId: string | number, productId: string | number): Promise<boolean> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  
+  try {
+    const purchase = {
+      id: Date.now().toString(),
+      userId: userId.toString(),
+      productId: productId.toString(),
+      purchaseDate: new Date().toISOString(),
+      status: "active"
+    };
+    
+    await purchasesCollection?.insertOne(purchase);
+    return true;
+  } catch (error) {
+    console.error('Error adding purchase:', error);
+    return false;
+  }
+};
+
 // Update dashboard analytics data
 export const updateDashboardAnalytics = async (newData: any): Promise<boolean> => {
   if (!isInitialized) {
@@ -395,5 +489,6 @@ export const closeDatabase = async (): Promise<void> => {
   productsCollection = null;
   couponsCollection = null;
   analyticsCollection = null;
+  purchasesCollection = null;
   console.log('Disconnected from local database');
 };

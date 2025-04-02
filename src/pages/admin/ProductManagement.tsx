@@ -15,7 +15,8 @@ import {
   FileText, 
   Tag,
   AlertCircle,
-  Code
+  Code,
+  Users
 } from "lucide-react";
 import { 
   Dialog, 
@@ -39,7 +40,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import CodeEditor from "@/components/CodeEditor";
-import { getProductsCollection } from "@/services/dbService";
+import { getProductsCollection, isProductPurchased } from "@/services/dbService";
 
 interface Product {
   id: number;
@@ -122,6 +123,7 @@ const ProductManagement = () => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [purchasedProducts, setPurchasedProducts] = useState<number[]>([]);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: "",
     price: "",
@@ -139,7 +141,6 @@ const ProductManagement = () => {
   const [codeEditorTab, setCodeEditorTab] = useState("html");
   const { toast } = useToast();
 
-  // Load products from database on component mount
   useEffect(() => {
     const loadProducts = async () => {
       try {
@@ -150,14 +151,31 @@ const ProductManagement = () => {
           
           if (storedProducts && storedProducts.length > 0) {
             setProducts(storedProducts);
+            
+            const purchasedIds = [];
+            for (const product of storedProducts) {
+              const isPurchased = await isProductPurchased(product.id);
+              if (isPurchased) {
+                purchasedIds.push(product.id);
+              }
+            }
+            setPurchasedProducts(purchasedIds);
           } else {
-            // If no products in database, initialize with default products
             const collection = await getProductsCollection();
             if (collection) {
               for (const product of initialProducts) {
                 await collection.insertOne(product);
               }
               setProducts(initialProducts);
+              
+              const purchasedIds = [];
+              for (const product of initialProducts) {
+                const isPurchased = await isProductPurchased(product.id);
+                if (isPurchased) {
+                  purchasedIds.push(product.id);
+                }
+              }
+              setPurchasedProducts(purchasedIds);
             }
           }
         }
@@ -275,6 +293,17 @@ const ProductManagement = () => {
 
   const handleDeleteProduct = async (id: number) => {
     try {
+      const isPurchased = await isProductPurchased(id);
+      
+      if (isPurchased) {
+        toast({
+          title: "Cannot Delete Product",
+          description: "This product has been purchased by users and cannot be deleted. Consider archiving it instead.",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       const productsCollection = await getProductsCollection();
       if (productsCollection) {
         await productsCollection.deleteOne({ id });
@@ -591,6 +620,7 @@ const ProductManagement = () => {
                   <TableHead>Type</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Purchased</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -617,6 +647,16 @@ const ProductManagement = () => {
                         }`}>
                           {product.status}
                         </span>
+                      </TableCell>
+                      <TableCell>
+                        {purchasedProducts.includes(product.id) ? (
+                          <div className="flex items-center text-green-600">
+                            <Users className="mr-1 h-4 w-4" />
+                            <span className="text-xs">Yes</span>
+                          </div>
+                        ) : (
+                          <span className="text-xs text-gray-500">No</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -803,7 +843,12 @@ const ProductManagement = () => {
                           
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="sm">
+                              <Button 
+                                variant="ghost" 
+                                size="sm"
+                                disabled={purchasedProducts.includes(product.id)}
+                                className={purchasedProducts.includes(product.id) ? "opacity-50 cursor-not-allowed" : ""}
+                              >
                                 <Trash className="h-4 w-4" />
                               </Button>
                             </AlertDialogTrigger>
@@ -845,7 +890,7 @@ const ProductManagement = () => {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center py-4 text-muted-foreground">
+                    <TableCell colSpan={7} className="text-center py-4 text-muted-foreground">
                       No products found
                     </TableCell>
                   </TableRow>
