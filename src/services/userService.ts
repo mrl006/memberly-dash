@@ -1,5 +1,6 @@
 
 import { toast } from "@/hooks/use-toast";
+import { getGeneralSettings } from "./settingsService";
 
 export interface User {
   id: string;
@@ -110,8 +111,9 @@ const saveUsers = (users: User[]): void => {
     localStorage.setItem('users', JSON.stringify(users));
   } catch (e) {
     console.error('Error saving users to localStorage:', e);
+    const settings = getGeneralSettings();
     toast({
-      title: "Error",
+      title: `${settings.siteName} - Error`,
       description: "Failed to save user data. Please try again.",
       variant: "destructive",
     });
