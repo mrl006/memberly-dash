@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import AdminHeader from "@/components/admin/AdminHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { initializeUsers } from "@/services/userService";
 
 const AdminLayout = () => {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -33,6 +34,11 @@ const AdminLayout = () => {
       setShowSidebar(true);
     }
   }, [isMobile]);
+
+  // Initialize users on mount
+  useEffect(() => {
+    initializeUsers();
+  }, []);
 
   const handleLogout = () => {
     // Implement logout logic here

@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button";
 import MemberHeader from "@/components/member/MemberHeader";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ensureDefaultUsers, initializeUsers } from "@/services/userService";
 
 const MemberLayout = () => {
   const [showSidebar, setShowSidebar] = useState(true);
@@ -29,6 +30,16 @@ const MemberLayout = () => {
       setShowSidebar(true);
     }
   }, [isMobile]);
+
+  // Initialize users on mount
+  useEffect(() => {
+    const loadUsers = async () => {
+      await initializeUsers();
+      await ensureDefaultUsers();
+    };
+    
+    loadUsers();
+  }, []);
 
   const handleLogout = () => {
     // Implement logout logic here

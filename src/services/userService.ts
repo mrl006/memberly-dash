@@ -9,6 +9,9 @@ export interface User {
   subscription: string;
   status: string;
   joined: string;
+  phone?: string;
+  company?: string;
+  website?: string;
 }
 
 // Cache for users
@@ -31,7 +34,17 @@ const getLocalUsers = (): User[] => {
 const convertDocumentToUser = (doc: any): User => {
   // If the document already matches our User interface, return it
   if (doc.id && doc.name && doc.email && doc.subscription && doc.status && doc.joined) {
-    return doc as User;
+    return {
+      id: doc.id,
+      name: doc.name,
+      email: doc.email,
+      subscription: doc.subscription,
+      status: doc.status,
+      joined: doc.joined,
+      phone: doc.phone || undefined,
+      company: doc.company || undefined,
+      website: doc.website || undefined
+    };
   }
   
   // Otherwise, create a User from document fields
@@ -42,6 +55,9 @@ const convertDocumentToUser = (doc: any): User => {
     subscription: doc.subscription || "Basic",
     status: doc.status || "active",
     joined: doc.joined || new Date().toLocaleDateString(),
+    phone: doc.phone,
+    company: doc.company,
+    website: doc.website
   };
 };
 
@@ -292,4 +308,24 @@ const saveLocalUsers = (users: User[]): void => {
 // Initialize users
 export const initializeUsers = async (): Promise<void> => {
   await fetchUsers();
+};
+
+// Initialize users with some default data if empty
+export const ensureDefaultUsers = async (): Promise<void> => {
+  const users = await fetchUsers();
+  
+  if (users.length === 0) {
+    // Add some default users
+    addUser({
+      name: "John Doe",
+      email: "john.doe@example.com",
+      subscription: "Professional"
+    });
+    
+    addUser({
+      name: "Jane Smith",
+      email: "jane.smith@example.com",
+      subscription: "Basic"
+    });
+  }
 };

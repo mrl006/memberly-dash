@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,19 +10,21 @@ import { useToast } from "@/components/ui/use-toast";
 import { AlertCircle, Check, Info, Loader2, QrCode, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { updateUser, User, getUsers, findUserByEmail } from "@/services/userService";
 
 const Profile = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   
   // User profile data
   const [profileData, setProfileData] = useState({
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-    company: "Acme Inc.",
-    website: "https://johndoe.com",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    company: "",
+    website: "",
   });
   
   // Password data
@@ -36,20 +38,73 @@ const Profile = () => {
   const [is2FAEnabled, setIs2FAEnabled] = useState(false);
   const [is2FASetupOpen, setIs2FASetupOpen] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
+
+  // Load current user on mount
+  useEffect(() => {
+    // In a real app, this would get the current user from auth context
+    // For demo purposes, we'll use the first user from the users collection
+    const users = getUsers();
+    if (users.length > 0) {
+      const user = users[0];
+      setCurrentUser(user);
+      
+      // Parse the name into first and last name
+      const nameParts = user.name.split(' ');
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(' ') || "";
+      
+      setProfileData({
+        firstName,
+        lastName,
+        email: user.email,
+        phone: user.phone || "",
+        company: user.company || "",
+        website: user.website || "",
+      });
+    }
+  }, []);
   
   // Handle profile form submission
   const handleProfileSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!currentUser) {
+      toast({
+        title: "Error",
+        description: "User data not found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
-    // Simulate API call
+    // Update user in the database
+    const updatedUser = updateUser(currentUser.id, {
+      name: `${profileData.firstName} ${profileData.lastName}`.trim(),
+      email: profileData.email,
+      phone: profileData.phone,
+      company: profileData.company,
+      website: profileData.website,
+    });
+    
     setTimeout(() => {
       setIsSubmitting(false);
-      toast({
-        title: "Profile Updated",
-        description: "Your profile information has been updated successfully.",
-      });
-    }, 1000);
+      
+      if (updatedUser) {
+        setCurrentUser(updatedUser);
+        toast({
+          title: "Profile Updated",
+          description: "Your profile information has been updated successfully.",
+        });
+      } else {
+        toast({
+          title: "Update Failed",
+          description: "Failed to update profile. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }, 500);
   };
   
   // Handle password form submission
@@ -163,8 +218,10 @@ const Profile = () => {
           <CardHeader>
             <div className="flex flex-col items-center">
               <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src="/placeholder.svg" alt="John Doe" />
-                <AvatarFallback className="text-2xl">JD</AvatarFallback>
+                <AvatarImage src="/placeholder.svg" alt={profileData.firstName} />
+                <AvatarFallback className="text-2xl">
+                  {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
+                </AvatarFallback>
               </Avatar>
               <CardTitle className="text-center">{profileData.firstName} {profileData.lastName}</CardTitle>
               <CardDescription className="text-center">{profileData.email}</CardDescription>
@@ -173,11 +230,11 @@ const Profile = () => {
           <CardContent className="space-y-2">
             <div className="space-y-1">
               <h4 className="text-sm font-medium text-muted-foreground">Member Since</h4>
-              <p>April 23, 2023</p>
+              <p>{currentUser?.joined || "April 23, 2023"}</p>
             </div>
             <div className="space-y-1">
               <h4 className="text-sm font-medium text-muted-foreground">Current Plan</h4>
-              <p>Professional Plan</p>
+              <p>{currentUser?.subscription || "Professional Plan"}</p>
             </div>
           </CardContent>
           <CardFooter>
