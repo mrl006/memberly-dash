@@ -17,9 +17,14 @@ const MemberHeader = () => {
 
   return (
     <header className="bg-white border-b border-gray-200 py-4 px-6 flex justify-between items-center">
-      <h1 className="text-xl font-semibold text-gray-800 md:hidden">Member Portal</h1>
-      
-      <div className="flex-1" />
+      {/* Logo Section */}
+      <div 
+        className="flex items-center cursor-pointer" 
+        onClick={() => navigate("/member")}
+      >
+        <div className="text-primary font-bold text-2xl mr-2">Memberly</div>
+        <span className="text-gray-600 text-sm hidden md:inline">Member Portal</span>
+      </div>
       
       <div className="flex items-center space-x-4">
         <Button variant="ghost" size="icon" className="relative">
@@ -29,10 +34,15 @@ const MemberHeader = () => {
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="/placeholder.svg" alt="John Doe" />
-                <AvatarFallback>JD</AvatarFallback>
+            <Button variant="ghost" className="relative rounded-full overflow-hidden h-10 w-10 p-0">
+              <Avatar className="h-10 w-10">
+                <AvatarImage 
+                  src="/lovable-uploads/0a3c5479-6eaf-42a3-a67e-9cc5f24a5216.png" 
+                  alt="Profile" 
+                />
+                <AvatarFallback className="bg-primary/10 text-primary">
+                  JD
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
