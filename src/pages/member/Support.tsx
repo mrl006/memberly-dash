@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,25 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { LifeBuoy, MessageSquare, AlertCircle, Plus, Send } from "lucide-react";
-
-// Mock ticket data
-const ticketHistory = [
-  {
-    id: 1,
-    subject: "Payment Failed",
-    status: "Open",
-    lastUpdate: "2023-08-15",
-    messages: 3,
-  },
-  {
-    id: 2,
-    subject: "Access Issue with Downloads",
-    status: "Closed",
-    lastUpdate: "2023-07-28",
-    messages: 5,
-  },
-];
+import { LifeBuoy, MessageSquare, AlertCircle, Plus, Send, Loader2 } from "lucide-react";
+import { getTicketsCollection } from "@/services/dbService";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock FAQ data
 const faqItems = [
@@ -59,20 +43,104 @@ const Support = () => {
     category: "",
     description: "",
   });
+  const [userTickets, setUserTickets] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Simulated user info (in a real app, this would come from auth)
+  const currentUser = {
+    name: "Current User",
+    email: "user@example.com"
+  };
+
+  useEffect(() => {
+    const fetchUserTickets = async () => {
+      try {
+        setIsLoading(true);
+        const ticketsCollection = await getTicketsCollection();
+        
+        if (ticketsCollection) {
+          // In a real app, you would filter by authenticated user ID
+          // Here we're just showing tickets with user === "Current User"
+          const result = await ticketsCollection.find({ user: currentUser.name }).toArray();
+          setUserTickets(result);
+        }
+      } catch (error) {
+        console.error("Error fetching user tickets:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load your support tickets",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (activeTab === "my-tickets") {
+      fetchUserTickets();
+    }
+  }, [activeTab, toast]);
 
   const handleTicketFormChange = (field, value) => {
     setTicketForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmitTicket = (e) => {
+  const handleSubmitTicket = async (e) => {
     e.preventDefault();
-    // Handle ticket submission logic here
-    alert("Ticket submitted successfully!");
-    setTicketForm({
-      subject: "",
-      category: "",
-      description: "",
-    });
+    
+    if (!ticketForm.subject || !ticketForm.category || !ticketForm.description) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      setIsLoading(true);
+      const ticketsCollection = await getTicketsCollection();
+      
+      if (ticketsCollection) {
+        const newTicket = {
+          id: Date.now(),
+          user: currentUser.name,
+          subject: ticketForm.subject,
+          category: ticketForm.category,
+          description: ticketForm.description,
+          status: "Open",
+          priority: "Medium", // Default priority
+          created: new Date().toISOString().split('T')[0],
+          messages: 1,
+        };
+        
+        await ticketsCollection.insertOne(newTicket);
+        
+        toast({
+          title: "Success",
+          description: "Your support ticket has been submitted",
+        });
+        
+        setTicketForm({
+          subject: "",
+          category: "",
+          description: "",
+        });
+        
+        // Switch to My Tickets tab and refresh the list
+        setActiveTab("my-tickets");
+      }
+    } catch (error) {
+      console.error("Error submitting ticket:", error);
+      toast({
+        title: "Error",
+        description: "Failed to submit your support ticket",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -81,7 +149,7 @@ const Support = () => {
         <h1 className="text-2xl font-bold tracking-tight">Get Support</h1>
       </div>
 
-      <Tabs defaultValue="new-ticket" onValueChange={setActiveTab}>
+      <Tabs defaultValue="new-ticket" onValueChange={setActiveTab} value={activeTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="new-ticket">
             <Plus className="h-4 w-4 mr-2" /> New Ticket
@@ -113,6 +181,7 @@ const Support = () => {
                     value={ticketForm.subject}
                     onChange={(e) => handleTicketFormChange("subject", e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
 
@@ -121,7 +190,7 @@ const Support = () => {
                   <Select
                     value={ticketForm.category}
                     onValueChange={(value) => handleTicketFormChange("category", value)}
-                    required
+                    disabled={isLoading}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a category" />
@@ -145,12 +214,13 @@ const Support = () => {
                     value={ticketForm.description}
                     onChange={(e) => handleTicketFormChange("description", e.target.value)}
                     required
+                    disabled={isLoading}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="attachment">Attachment (Optional)</Label>
-                  <Input id="attachment" type="file" />
+                  <Input id="attachment" type="file" disabled={isLoading} />
                   <p className="text-xs text-muted-foreground">
                     Max file size: 5MB. Supported formats: JPG, PNG, PDF
                   </p>
@@ -158,8 +228,20 @@ const Support = () => {
               </form>
             </CardContent>
             <CardFooter>
-              <Button type="submit" onClick={handleSubmitTicket}>
-                <Send className="mr-2 h-4 w-4" /> Submit Ticket
+              <Button 
+                type="submit" 
+                onClick={handleSubmitTicket} 
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" /> Submit Ticket
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -175,9 +257,14 @@ const Support = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {ticketHistory.length > 0 ? (
+              {isLoading ? (
+                <div className="flex justify-center items-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin mr-2" />
+                  <span>Loading your tickets...</span>
+                </div>
+              ) : userTickets.length > 0 ? (
                 <div className="space-y-4">
-                  {ticketHistory.map((ticket) => (
+                  {userTickets.map((ticket) => (
                     <div key={ticket.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div className="space-y-1">
                         <div className="flex items-center">
@@ -187,7 +274,7 @@ const Support = () => {
                           </Badge>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                          Last updated: {ticket.lastUpdate} • {ticket.messages} messages
+                          Last updated: {ticket.created} • {ticket.messages} messages
                         </p>
                       </div>
                       <Button variant="outline" size="sm">View Details</Button>

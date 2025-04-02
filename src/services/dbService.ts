@@ -72,6 +72,12 @@ class LocalStorageCollection implements Collection {
 
   async insertOne(doc: any): Promise<any> {
     const collection = this.getCollection();
+    
+    // Auto-generate an ID if one doesn't exist
+    if (!doc._id && !doc.id) {
+      doc.id = Date.now().toString();
+    }
+    
     collection.push(doc);
     this.saveCollection(collection);
     return { acknowledged: true, insertedId: doc._id || doc.id };
@@ -188,6 +194,7 @@ class LocalStorageCollection implements Collection {
 // Collections
 let usersCollection: Collection | null = null;
 let settingsCollection: Collection | null = null;
+let ticketsCollection: Collection | null = null;
 let isInitialized = false;
 
 // Initialize storage
@@ -198,6 +205,7 @@ export const initDatabase = async (): Promise<boolean> => {
     console.log('Initializing local storage database');
     usersCollection = new LocalStorageCollection('users');
     settingsCollection = new LocalStorageCollection('settings');
+    ticketsCollection = new LocalStorageCollection('tickets');
     isInitialized = true;
     return true;
   } catch (error) {
@@ -227,10 +235,19 @@ export const getSettingsCollection = async (): Promise<Collection | null> => {
   return settingsCollection;
 };
 
+// Get tickets collection
+export const getTicketsCollection = async (): Promise<Collection | null> => {
+  if (!isInitialized) {
+    await initDatabase();
+  }
+  return ticketsCollection;
+};
+
 // Close database connection (useful for cleanup)
 export const closeDatabase = async (): Promise<void> => {
   isInitialized = false;
   usersCollection = null;
   settingsCollection = null;
+  ticketsCollection = null;
   console.log('Disconnected from local database');
 };

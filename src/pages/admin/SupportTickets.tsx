@@ -1,27 +1,63 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { LifeBuoy, Eye, MessageSquare } from "lucide-react";
+import { LifeBuoy, Eye, MessageSquare, Loader2 } from "lucide-react";
+import { getTicketsCollection } from "@/services/dbService";
+import { useToast } from "@/hooks/use-toast";
 
-// Mock ticket data
-const initialTickets = [
-  { id: 1, user: "John Doe", subject: "Payment Failed", status: "Open", priority: "High", created: "2023-08-15" },
-  { id: 2, user: "Sarah Smith", subject: "Access Issue", status: "In Progress", priority: "Medium", created: "2023-08-14" },
-  { id: 3, user: "Mike Johnson", subject: "Refund Request", status: "Closed", priority: "Low", created: "2023-08-10" },
-  { id: 4, user: "Emily Wilson", subject: "Account Locked", status: "Open", priority: "Critical", created: "2023-08-15" },
+// Default ticket data (used only if no tickets exist in the database)
+const defaultTickets = [
+  { id: 1, user: "John Doe", subject: "Payment Failed", status: "Open", priority: "High", created: new Date().toISOString().split('T')[0] },
+  { id: 2, user: "Sarah Smith", subject: "Access Issue", status: "In Progress", priority: "Medium", created: new Date().toISOString().split('T')[0] },
 ];
 
 const SupportTickets = () => {
-  const [tickets, setTickets] = useState(initialTickets);
+  const [tickets, setTickets] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        setIsLoading(true);
+        const ticketsCollection = await getTicketsCollection();
+        
+        if (ticketsCollection) {
+          const result = await ticketsCollection.find({}).toArray();
+          
+          // If no tickets exist yet, seed with default tickets
+          if (result.length === 0) {
+            for (const ticket of defaultTickets) {
+              await ticketsCollection.insertOne(ticket);
+            }
+            setTickets(defaultTickets);
+          } else {
+            setTickets(result);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching tickets:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load support tickets",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, [toast]);
 
   const filteredTickets = tickets.filter((ticket) =>
-    ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    ticket.user.toLowerCase().includes(searchTerm.toLowerCase())
+    ticket.subject?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    ticket.user?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const getStatusColor = (status) => {
@@ -88,7 +124,16 @@ const SupportTickets = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredTickets.length > 0 ? (
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center py-8">
+                      <div className="flex justify-center items-center">
+                        <Loader2 className="h-6 w-6 animate-spin mr-2" />
+                        <span>Loading tickets...</span>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ) : filteredTickets.length > 0 ? (
                   filteredTickets.map((ticket) => (
                     <TableRow key={ticket.id}>
                       <TableCell>{ticket.id}</TableCell>
