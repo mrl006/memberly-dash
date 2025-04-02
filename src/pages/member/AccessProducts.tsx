@@ -2,12 +2,25 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Unlock } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { getUserPurchasedProductsWithDetails } from "@/services/purchaseService";
 import { useToast } from "@/hooks/use-toast";
 
+// Define product data with colors matching the image
+const productData = [
+  { id: "1", name: "Semrush", bgColor: "bg-gradient-to-br from-[#5030E5] to-[#00A550]", textColor: "text-white", path: "semrush" },
+  { id: "2", name: "Ubersuggest", bgColor: "bg-[#FF6B35]", textColor: "text-white", path: "ubersuggest" },
+  { id: "3", name: "Grammarly", bgColor: "bg-[#15C39A]", textColor: "text-white", path: "grammarly" },
+  { id: "4", name: "Canva", bgColor: "bg-[#00C4CC]", textColor: "text-white", path: "canva" },
+  { id: "5", name: "ChatGPT Plus", bgColor: "bg-[#10A37F]", textColor: "text-white", path: "chat-gpt" },
+  { id: "6", name: "SEOptimer", bgColor: "bg-[#F8F9FA]", textColor: "text-[#246EB9]", path: "seoptimer" },
+  { id: "7", name: "Seobility", bgColor: "bg-[#246EB9]", textColor: "text-white", path: "seobility" },
+  { id: "8", name: "SEO Site Checkup", bgColor: "bg-[#F8F9FA]", textColor: "text-[#FF8C00]", path: "seo-site-checkup" },
+  { id: "9", name: "Ahrefs", bgColor: "bg-[#0A1A2A]", textColor: "text-[#FA8E21]", path: "ahrefs" },
+];
+
 const AccessProducts = () => {
-  const [products, setProducts] = useState<any[]>([]);
+  const [products, setProducts] = useState(productData);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
@@ -15,17 +28,13 @@ const AccessProducts = () => {
     const loadPurchasedProducts = async () => {
       try {
         setIsLoading(true);
-        // In a real app, this would be the actual user ID from auth
-        const currentUserId = "1"; // Mock user ID for demo purposes
-        
-        const purchasedProducts = await getUserPurchasedProductsWithDetails(currentUserId);
-        console.log("Loaded products:", purchasedProducts); // Debug log to see what's being loaded
-        setProducts(purchasedProducts);
+        // Mock functionality - in a real app this would filter/modify the products based on user's purchases
+        setProducts(productData);
       } catch (error) {
         console.error("Error loading products:", error);
         toast({
           title: "Error",
-          description: "Failed to load your purchased products",
+          description: "Failed to load your access products",
           variant: "destructive"
         });
       } finally {
@@ -35,34 +44,6 @@ const AccessProducts = () => {
     
     loadPurchasedProducts();
   }, [toast]);
-  
-  // Simplified product icon with custom styling based on type
-  const getProductIcon = (product: any) => {
-    const type = product.type?.toLowerCase();
-    
-    // Use different colors based on product type
-    let iconClass = "text-blue-500";
-    
-    if (type?.includes('course') || type?.includes('subscription')) {
-      iconClass = "text-blue-500";
-      return (
-        <div className={`rounded-full ${iconClass} h-20 w-20 flex items-center justify-center bg-blue-50 mb-4`}>
-          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 8H7V7h10v4z"/>
-          </svg>
-        </div>
-      );
-    }
-    
-    // Default icon for other types
-    return (
-      <div className={`rounded-full ${iconClass} h-20 w-20 flex items-center justify-center bg-blue-50 mb-4`}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8 20V8h2v12H8zm6 0V8h2v12h-2z"/>
-        </svg>
-      </div>
-    );
-  };
   
   if (isLoading) {
     return (
@@ -78,50 +59,32 @@ const AccessProducts = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Your Products</h1>
-        <p className="text-gray-500 mt-1">Access and manage all your purchased products here</p>
+        <h1 className="text-3xl font-bold tracking-tight">Access Products</h1>
+        <p className="text-gray-500 mt-1">Click on any product to access it</p>
       </div>
       
-      {products.length > 0 ? (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow">
-              <div className="flex flex-col items-center justify-center py-6 w-full">
-                {getProductIcon(product)}
-                <h2 className="text-xl font-bold mb-2">{product.name}</h2>
-                <p className="text-gray-500 text-sm mb-4">
-                  {product.type || "Digital Product"}
-                </p>
-                {product.purchaseInfo?.status && (
-                  <div className={`text-xs px-3 py-1 rounded-full mb-4 ${
-                    product.purchaseInfo.status === 'active' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {product.purchaseInfo.status === 'active' ? 'Active' : 'Inactive'}
-                  </div>
-                )}
-              </div>
-              
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        {products.map((product) => (
+          <Card 
+            key={product.id} 
+            className={`overflow-hidden hover:shadow-lg transition-shadow cursor-pointer flex flex-col ${product.bgColor}`}
+          >
+            <div className="flex flex-col items-center justify-center p-6 h-32">
+              <h2 className={`text-xl font-bold ${product.textColor}`}>{product.name}</h2>
+            </div>
+            <div className="bg-green-500 p-2 text-center text-white">
               <Button 
-                className="w-full mt-auto" 
-                disabled={product.purchaseInfo?.status !== "active"}
+                variant="link" 
+                className="text-white p-0 h-auto font-medium flex items-center justify-center w-full"
+                onClick={() => window.open(`https://${product.path}.com`, '_blank')}
               >
-                <Unlock className="mr-2 h-4 w-4" />
-                Access Content
+                {product.name}
+                <ExternalLink className="ml-1 h-3 w-3" />
               </Button>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="text-center p-12 border rounded-lg bg-gray-50">
-          <h3 className="text-lg font-medium mb-2">No Products Found</h3>
-          <p className="text-muted-foreground mb-6">
-            You haven't purchased any products or subscriptions yet.
-          </p>
-          <Button>Browse Available Products</Button>
-        </div>
-      )}
+            </div>
+          </Card>
+        ))}
+      </div>
     </div>
   );
 };
