@@ -95,6 +95,37 @@ const AccessProducts = () => {
     });
   };
   
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+  
+  const cardVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { type: "spring", stiffness: 300, damping: 20 }
+    },
+    hover: { 
+      scale: 1.05,
+      boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
+      transition: { type: "spring", stiffness: 400, damping: 10 }
+    }
+  };
+  
+  const buttonVariants = {
+    rest: { scale: 1 },
+    hover: { scale: 1.1 },
+    tap: { scale: 0.95 }
+  };
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -132,41 +163,52 @@ const AccessProducts = () => {
           <p className="text-gray-500">No products available. Please check back later.</p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <motion.div 
+          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {products.map((product, index) => (
             <motion.div
               key={product.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.3, delay: index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
+              variants={cardVariants}
+              whileHover="hover"
               onHoverStart={() => setHoveredProduct(product.id)}
               onHoverEnd={() => setHoveredProduct(null)}
+              className="aspect-square"
             >
               <Card 
-                className={`overflow-hidden transition-shadow cursor-pointer flex flex-col ${product.bgColor}`}
+                className={`h-full w-full overflow-hidden transition-all cursor-pointer flex flex-col ${product.bgColor} shadow-lg`}
                 onClick={() => handleAccessProduct(product)}
               >
-                <div className="flex flex-col items-center justify-center p-6 h-32 relative">
-                  <motion.h2 
-                    className={`text-xl font-bold ${product.textColor}`}
-                    initial={{ y: 0 }}
-                    animate={{ 
-                      y: hoveredProduct === product.id ? -5 : 0,
-                    }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {product.name}
-                  </motion.h2>
-                </div>
-                <div className="bg-black/30 backdrop-blur-sm p-2 text-center">
+                <div className="flex flex-col items-center justify-center p-4 flex-grow">
                   <motion.div
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.95 }}
+                    className="flex flex-col items-center justify-center text-center h-full w-full"
+                    animate={{
+                      y: hoveredProduct === product.id ? -10 : 0,
+                      scale: hoveredProduct === product.id ? 1.05 : 1
+                    }}
+                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                  >
+                    <h2 className={`text-xl md:text-2xl font-bold mb-2 ${product.textColor}`}>
+                      {product.name}
+                    </h2>
+                    <p className={`text-sm ${product.textColor} opacity-80 line-clamp-2`}>
+                      {product.description}
+                    </p>
+                  </motion.div>
+                </div>
+                
+                <div className="p-3 bg-black/30 backdrop-blur-sm">
+                  <motion.div
+                    variants={buttonVariants}
+                    whileHover="hover"
+                    whileTap="tap"
                   >
                     <Button 
                       variant="ghost" 
-                      className={`text-white font-medium px-5 py-2 w-full transition-all relative overflow-hidden group ${hoveredProduct === product.id ? 'bg-white/20' : ''}`}
+                      className={`text-white font-medium w-full relative overflow-hidden group`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAccessProduct(product);
@@ -177,7 +219,8 @@ const AccessProducts = () => {
                         Access
                         <motion.span 
                           animate={{ 
-                            x: hoveredProduct === product.id ? 5 : 0 
+                            x: hoveredProduct === product.id ? 5 : 0,
+                            opacity: hoveredProduct === product.id ? 1 : 0.7
                           }}
                           transition={{ 
                             type: "spring", 
@@ -194,7 +237,7 @@ const AccessProducts = () => {
               </Card>
             </motion.div>
           ))}
-        </div>
+        </motion.div>
       )}
     </div>
   );
