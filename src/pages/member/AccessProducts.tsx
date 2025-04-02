@@ -164,7 +164,7 @@ const AccessProducts = () => {
         </motion.div>
       ) : (
         <motion.div 
-          className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -176,46 +176,46 @@ const AccessProducts = () => {
               whileHover="hover"
               onHoverStart={() => setHoveredProduct(product.id)}
               onHoverEnd={() => setHoveredProduct(null)}
-              className="aspect-square"
             >
               <Card 
-                className={`h-full w-full overflow-hidden transition-all cursor-pointer flex flex-col ${product.bgColor} shadow-lg`}
+                className={`h-full w-full overflow-hidden transition-all cursor-pointer flex flex-col ${product.bgColor} shadow-lg border-0`}
                 onClick={() => handleAccessProduct(product)}
               >
-                <div className="flex flex-col items-center justify-center p-5 flex-grow">
+                <div className="flex flex-col items-center justify-center p-6 flex-grow text-center">
                   <motion.div
-                    className="flex flex-col items-center justify-center text-center h-full w-full"
+                    className="flex flex-col items-center justify-center h-full w-full"
                     animate={{
-                      y: hoveredProduct === product.id ? -10 : 0,
-                      scale: hoveredProduct === product.id ? 1.05 : 1
+                      y: hoveredProduct === product.id ? -5 : 0,
+                      scale: hoveredProduct === product.id ? 1.03 : 1
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <h2 className={`text-xl md:text-2xl font-bold mb-3 ${product.textColor}`}>
+                    <h2 className={`text-xl md:text-2xl font-bold mb-4 ${product.textColor}`}>
                       {product.name}
                     </h2>
-                    <p className={`text-sm ${product.textColor} opacity-90 line-clamp-2 mb-2`}>
+                    <p className={`text-sm ${product.textColor} opacity-90 mb-3 line-clamp-3`}>
                       {product.description}
                     </p>
                   </motion.div>
                 </div>
                 
-                <div className="p-3 bg-black/20 backdrop-blur-sm">
+                <div className="p-4 bg-black/20 backdrop-blur-sm mt-auto">
                   <motion.div
                     variants={buttonVariants}
                     whileHover="hover"
                     whileTap="tap"
+                    className="w-full"
                   >
                     <Button 
                       variant="secondary" 
-                      className={`${product.textColor} font-medium w-full py-2 relative overflow-hidden group hover:opacity-90`}
+                      className={`${product.textColor} font-medium w-full text-center py-2 h-12 relative group`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAccessProduct(product);
                       }}
                     >
-                      <span className="relative flex items-center justify-center gap-2">
-                        Access
+                      <span className="relative inline-flex items-center justify-center gap-2 px-2">
+                        Access Now
                         <motion.span 
                           animate={{ 
                             x: hoveredProduct === product.id ? 5 : 0,
@@ -226,6 +226,7 @@ const AccessProducts = () => {
                             stiffness: 400, 
                             damping: 10 
                           }}
+                          className="inline-block"
                         >
                           →
                         </motion.span>
