@@ -1,22 +1,31 @@
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight, Calendar, Download, FileText, PlayCircle, Video, BarChart3, MousePointer, Clock } from "lucide-react";
 import { Link } from "react-router-dom";
+import { getUsers } from "@/services/userService";
 
 const Dashboard = () => {
-  // Dummy subscription data
-  const subscription = {
+  // User activity data
+  const [userStats, setUserStats] = useState({
+    courseProgress: 68,
+    lastSessionMinutes: 47,
+    totalActivities: 12
+  });
+
+  // Subscription data
+  const [subscription, setSubscription] = useState({
     name: "Professional Plan",
     status: "active",
     nextBillingDate: "May 28, 2023",
     daysRemaining: 18,
-  };
+  });
 
-  // Dummy products data with course progress
-  const products = [
+  // User content data
+  const [products, setProducts] = useState([
     {
       id: "1",
       name: "Introduction to Memberships",
@@ -48,27 +57,57 @@ const Dashboard = () => {
       icon: <Download className="h-10 w-10 text-primary" />,
       downloadCount: 45,
     },
-  ];
+  ]);
+
+  // Load user data when component mounts
+  useEffect(() => {
+    // In a real app, these values would come from an API
+    // Here we're simulating that by retrieving user data from our service
+    const users = getUsers();
+    if (users.length > 0) {
+      const user = users[0];
+
+      // In a real app, these metrics would be fetched from a user analytics service
+      // For now, we'll use our predefined values but with a slight randomization to make it feel more "real"
+      const randomProgress = Math.floor(Math.random() * 15) + 60; // 60-75%
+      const randomSession = Math.floor(Math.random() * 20) + 40; // 40-60 minutes
+      const randomActivities = Math.floor(Math.random() * 5) + 10; // 10-15 activities
+
+      setUserStats({
+        courseProgress: randomProgress,
+        lastSessionMinutes: randomSession,
+        totalActivities: randomActivities
+      });
+
+      // Update subscription based on user data
+      setSubscription({
+        name: user.subscription,
+        status: user.status,
+        nextBillingDate: "May 28, 2023", // In a real app, this would come from the subscription service
+        daysRemaining: 18,
+      });
+    }
+  }, []);
 
   // Stats cards data
   const statsCards = [
     {
       title: "Course Progress",
-      value: "68%",
+      value: `${userStats.courseProgress}%`,
       icon: <BarChart3 className="h-5 w-5 text-blue-600" />,
       description: "Average completion rate",
       color: "bg-blue-50 text-blue-600",
     },
     {
       title: "Last Session",
-      value: "47 min",
+      value: `${userStats.lastSessionMinutes} min`,
       icon: <Clock className="h-5 w-5 text-green-600" />,
       description: "Time spent learning",
       color: "bg-green-50 text-green-600",
     },
     {
       title: "Total Activities",
-      value: "12",
+      value: userStats.totalActivities.toString(),
       icon: <MousePointer className="h-5 w-5 text-purple-600" />,
       description: "Completed this month",
       color: "bg-purple-50 text-purple-600",
@@ -140,78 +179,134 @@ const Dashboard = () => {
         </Card>
       </div>
       
-      {/* Products Grid */}
+      {/* Your Content Section - Redesigned based on the provided image */}
       <div>
-        <div className="flex justify-between items-center mb-4">
+        <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold">Your Content</h2>
           <Link to="/member/access-products">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="text-primary hover:text-primary/80">
               View All <ArrowRight className="ml-1 h-4 w-4" />
             </Button>
           </Link>
         </div>
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden hover:shadow-md transition-shadow border-none shadow-sm">
-              <CardHeader className="pb-2 border-b bg-gray-50">
-                <div className="flex justify-between items-start">
-                  {product.icon}
-                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
-                    {product.type}
-                  </Badge>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          {/* Course 1 */}
+          <div className="border rounded-md overflow-hidden shadow-sm">
+            <div className="p-4 border-b flex items-center space-x-3">
+              <FileText className="h-6 w-6 text-primary" />
+              <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                Course
+              </Badge>
+            </div>
+            
+            <div className="p-4">
+              <h3 className="font-medium mb-4">Introduction to Memberships</h3>
+              
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span>Progress</span>
+                  <span>75%</span>
                 </div>
-              </CardHeader>
-              <CardContent className="p-4">
-                <h3 className="font-medium line-clamp-1">{product.name}</h3>
-                {product.type === "Course" && (
-                  <div className="mt-3 space-y-1">
-                    <div className="flex justify-between text-sm">
-                      <span>Progress</span>
-                      <span>{product.progress}%</span>
-                    </div>
-                    <Progress value={product.progress} className="h-2" />
-                    <p className="text-xs text-gray-500 mt-1">Last accessed: {product.lastAccessed}</p>
-                  </div>
-                )}
-                {product.type === "Event" && (
-                  <div className="mt-3">
-                    <p className="text-sm text-muted-foreground">
-                      {product.date} at {product.time}
-                    </p>
-                    <Badge variant="outline" className="mt-2 bg-orange-50 text-orange-700 border-orange-200">
-                      Upcoming
-                    </Badge>
-                  </div>
-                )}
-                {product.type === "Download" && product.downloadCount && (
-                  <p className="text-xs text-gray-500 mt-3">
-                    Downloaded {product.downloadCount} times
-                  </p>
-                )}
-              </CardContent>
-              <CardFooter className="pt-1 border-t bg-gray-50">
-                <Button className="w-full" variant="outline">
-                  {product.type === "Course" ? (
-                    <>
-                      <PlayCircle className="mr-2 h-4 w-4" />
-                      Continue Learning
-                    </>
-                  ) : product.type === "Event" ? (
-                    <>
-                      <Calendar className="mr-2 h-4 w-4" />
-                      Join Event
-                    </>
-                  ) : (
-                    <>
-                      <Download className="mr-2 h-4 w-4" />
-                      Download Now
-                    </>
-                  )}
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                <Progress value={75} className="h-2 bg-gray-100" />
+                <p className="text-xs text-gray-500">Last accessed: 2 days ago</p>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-3 flex justify-center">
+              <Button variant="outline" className="w-full border-gray-200">
+                <PlayCircle className="mr-2 h-4 w-4 text-primary" />
+                Continue Learning
+              </Button>
+            </div>
+          </div>
+
+          {/* Course 2 */}
+          <div className="border rounded-md overflow-hidden shadow-sm">
+            <div className="p-4 border-b flex items-center space-x-3">
+              <Video className="h-6 w-6 text-primary" />
+              <Badge variant="outline" className="bg-blue-50 text-blue-600 border-blue-200">
+                Course
+              </Badge>
+            </div>
+            
+            <div className="p-4">
+              <h3 className="font-medium mb-4">Advanced Monetization</h3>
+              
+              <div className="space-y-2 mb-4">
+                <div className="flex justify-between text-sm">
+                  <span>Progress</span>
+                  <span>30%</span>
+                </div>
+                <Progress value={30} className="h-2 bg-gray-100" />
+                <p className="text-xs text-gray-500">Last accessed: 1 week ago</p>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-3 flex justify-center">
+              <Button variant="outline" className="w-full border-gray-200">
+                <PlayCircle className="mr-2 h-4 w-4 text-primary" />
+                Continue Learning
+              </Button>
+            </div>
+          </div>
+
+          {/* Event */}
+          <div className="border rounded-md overflow-hidden shadow-sm">
+            <div className="p-4 border-b flex items-center space-x-3">
+              <Calendar className="h-6 w-6 text-primary" />
+              <Badge variant="outline" className="bg-purple-50 text-purple-600 border-purple-200">
+                Event
+              </Badge>
+            </div>
+            
+            <div className="p-4">
+              <h3 className="font-medium mb-4">Monthly Webinar</h3>
+              
+              <div className="mt-4 mb-6">
+                <p className="text-sm text-gray-600">
+                  May 15, 2023 at 2:00 PM EST
+                </p>
+                <Badge variant="outline" className="mt-3 bg-orange-50 text-orange-600 border-orange-200">
+                  Upcoming
+                </Badge>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-3 flex justify-center">
+              <Button variant="outline" className="w-full border-gray-200">
+                <Calendar className="mr-2 h-4 w-4 text-primary" />
+                Join Event
+              </Button>
+            </div>
+          </div>
+
+          {/* Download */}
+          <div className="border rounded-md overflow-hidden shadow-sm">
+            <div className="p-4 border-b flex items-center space-x-3">
+              <Download className="h-6 w-6 text-primary" />
+              <Badge variant="outline" className="bg-green-50 text-green-600 border-green-200">
+                Download
+              </Badge>
+            </div>
+            
+            <div className="p-4">
+              <h3 className="font-medium mb-4">Resource Pack</h3>
+              
+              <div className="mt-4 mb-7">
+                <p className="text-sm text-gray-600">
+                  Downloaded 45 times
+                </p>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-3 flex justify-center">
+              <Button variant="outline" className="w-full border-gray-200">
+                <Download className="mr-2 h-4 w-4 text-primary" />
+                Download Now
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

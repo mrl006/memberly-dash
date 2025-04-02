@@ -1,21 +1,25 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/components/ui/use-toast";
-import { AlertCircle, Check, Info, Loader2, QrCode, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, Check, Info, Loader2, QrCode, Shield, ShieldCheck, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { updateUser, User, getUsers, findUserByEmail } from "@/services/userService";
+import { motion } from "framer-motion";
 
 const Profile = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarSrc, setAvatarSrc] = useState("/lovable-uploads/5f2b6002-1195-4f70-aee9-c6de2dd470aa.png");
+  const [isUploading, setIsUploading] = useState(false);
   
   // User profile data
   const [profileData, setProfileData] = useState({
@@ -105,6 +109,34 @@ const Profile = () => {
         });
       }
     }, 500);
+  };
+
+  // Handle photo upload
+  const handlePhotoUpload = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+
+    // Simulate file upload
+    setTimeout(() => {
+      // Create object URL for the selected image
+      const objectUrl = URL.createObjectURL(file);
+      setAvatarSrc(objectUrl);
+      setIsUploading(false);
+      
+      toast({
+        title: "Photo Updated",
+        description: "Your profile photo has been updated successfully.",
+      });
+    }, 1500);
   };
   
   // Handle password form submission
@@ -214,31 +246,53 @@ const Profile = () => {
       
       <div className="flex flex-col md:flex-row gap-6">
         {/* Profile Card */}
-        <Card className="flex-grow md:max-w-sm">
+        <Card className="flex-grow md:max-w-sm shadow-sm border-none">
           <CardHeader>
             <div className="flex flex-col items-center">
-              <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src="/placeholder.svg" alt={profileData.firstName} />
-                <AvatarFallback className="text-2xl">
-                  {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <CardTitle className="text-center">{profileData.firstName} {profileData.lastName}</CardTitle>
+              <div className="relative group">
+                <Avatar className="h-24 w-24 mb-4 border-2 border-primary/10">
+                  <AvatarImage src={avatarSrc} alt={profileData.firstName} className="object-cover" />
+                  <AvatarFallback className="text-2xl bg-primary/10 text-primary">
+                    {profileData.firstName.charAt(0)}{profileData.lastName.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                {isUploading && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/30 rounded-full">
+                    <Loader2 className="h-10 w-10 text-white animate-spin" />
+                  </div>
+                )}
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onClick={handlePhotoUpload}>
+                  <Upload className="h-8 w-8 text-white" />
+                </div>
+              </div>
+              <CardTitle className="text-center text-xl">{profileData.firstName} {profileData.lastName}</CardTitle>
               <CardDescription className="text-center">{profileData.email}</CardDescription>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*" 
+                onChange={handleFileChange}
+              />
             </div>
           </CardHeader>
-          <CardContent className="space-y-2">
-            <div className="space-y-1">
+          <CardContent className="space-y-4">
+            <div className="space-y-2 bg-gray-50 p-3 rounded-md">
               <h4 className="text-sm font-medium text-muted-foreground">Member Since</h4>
-              <p>{currentUser?.joined || "April 23, 2023"}</p>
+              <p className="font-medium">{currentUser?.joined || "April 23, 2023"}</p>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2 bg-gray-50 p-3 rounded-md">
               <h4 className="text-sm font-medium text-muted-foreground">Current Plan</h4>
-              <p>{currentUser?.subscription || "Professional Plan"}</p>
+              <p className="font-medium">{currentUser?.subscription || "Professional Plan"}</p>
             </div>
           </CardContent>
           <CardFooter>
-            <Button variant="outline" className="w-full">
+            <Button 
+              variant="outline" 
+              className="w-full border-primary/20 hover:bg-primary/5 hover:text-primary" 
+              onClick={handlePhotoUpload}
+            >
+              <Upload className="h-4 w-4 mr-2" />
               Upload New Photo
             </Button>
           </CardFooter>
@@ -247,14 +301,14 @@ const Profile = () => {
         {/* Settings Tabs */}
         <div className="flex-grow">
           <Tabs defaultValue="personal" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="personal">Personal Info</TabsTrigger>
               <TabsTrigger value="security">Security</TabsTrigger>
             </TabsList>
             
-            <TabsContent value="personal" className="space-y-4 pt-4">
-              <Card>
-                <CardHeader>
+            <TabsContent value="personal" className="space-y-4">
+              <Card className="shadow-sm border-none">
+                <CardHeader className="pb-3">
                   <CardTitle>Personal Information</CardTitle>
                   <CardDescription>
                     Update your personal details
@@ -270,6 +324,7 @@ const Profile = () => {
                             id="firstName" 
                             value={profileData.firstName}
                             onChange={(e) => setProfileData({...profileData, firstName: e.target.value})}
+                            className="border-gray-200 focus-visible:ring-primary/30"
                           />
                         </div>
                         <div className="space-y-2">
@@ -278,6 +333,7 @@ const Profile = () => {
                             id="lastName" 
                             value={profileData.lastName}
                             onChange={(e) => setProfileData({...profileData, lastName: e.target.value})}
+                            className="border-gray-200 focus-visible:ring-primary/30"
                           />
                         </div>
                       </div>
@@ -288,6 +344,7 @@ const Profile = () => {
                           type="email"
                           value={profileData.email}
                           onChange={(e) => setProfileData({...profileData, email: e.target.value})}
+                          className="border-gray-200 focus-visible:ring-primary/30"
                         />
                       </div>
                       <div className="space-y-2">
@@ -297,6 +354,7 @@ const Profile = () => {
                           type="tel"
                           value={profileData.phone}
                           onChange={(e) => setProfileData({...profileData, phone: e.target.value})}
+                          className="border-gray-200 focus-visible:ring-primary/30"
                         />
                       </div>
                       <div className="grid md:grid-cols-2 gap-4">
@@ -306,6 +364,7 @@ const Profile = () => {
                             id="company" 
                             value={profileData.company}
                             onChange={(e) => setProfileData({...profileData, company: e.target.value})}
+                            className="border-gray-200 focus-visible:ring-primary/30"
                           />
                         </div>
                         <div className="space-y-2">
@@ -314,23 +373,31 @@ const Profile = () => {
                             id="website" 
                             value={profileData.website}
                             onChange={(e) => setProfileData({...profileData, website: e.target.value})}
+                            className="border-gray-200 focus-visible:ring-primary/30"
                           />
                         </div>
                       </div>
                     </div>
                   </form>
                 </CardContent>
-                <CardFooter>
-                  <Button form="personal-form" disabled={isSubmitting}>
-                    {isSubmitting ? "Saving..." : "Save Changes"}
+                <CardFooter className="border-t bg-gray-50 pt-4">
+                  <Button form="personal-form" disabled={isSubmitting} className="ml-auto">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Changes"
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
             </TabsContent>
             
-            <TabsContent value="security" className="space-y-4 pt-4">
-              <Card>
-                <CardHeader>
+            <TabsContent value="security" className="space-y-4">
+              <Card className="shadow-sm border-none">
+                <CardHeader className="pb-3">
                   <CardTitle>Change Password</CardTitle>
                   <CardDescription>
                     Update your password
@@ -346,6 +413,7 @@ const Profile = () => {
                           type="password"
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({...passwordData, currentPassword: e.target.value})}
+                          className="border-gray-200 focus-visible:ring-primary/30"
                         />
                       </div>
                       <div className="space-y-2">
@@ -355,6 +423,7 @@ const Profile = () => {
                           type="password"
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({...passwordData, newPassword: e.target.value})}
+                          className="border-gray-200 focus-visible:ring-primary/30"
                         />
                       </div>
                       <div className="space-y-2">
@@ -364,20 +433,28 @@ const Profile = () => {
                           type="password"
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({...passwordData, confirmPassword: e.target.value})}
+                          className="border-gray-200 focus-visible:ring-primary/30"
                         />
                       </div>
                     </div>
                   </form>
                 </CardContent>
-                <CardFooter>
-                  <Button form="password-form" disabled={isSubmitting}>
-                    {isSubmitting ? "Updating..." : "Update Password"}
+                <CardFooter className="border-t bg-gray-50 pt-4">
+                  <Button form="password-form" disabled={isSubmitting} className="ml-auto">
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Password"
+                    )}
                   </Button>
                 </CardFooter>
               </Card>
               
-              <Card>
-                <CardHeader>
+              <Card className="shadow-sm border-none">
+                <CardHeader className="pb-3">
                   <CardTitle>Two-Factor Authentication</CardTitle>
                   <CardDescription>
                     Add an extra layer of security to your account
@@ -411,6 +488,7 @@ const Profile = () => {
                             value={verificationCode}
                             onChange={(e) => setVerificationCode(e.target.value)}
                             maxLength={6}
+                            className="border-gray-200 focus-visible:ring-primary/30"
                           />
                         </div>
                         
@@ -493,7 +571,7 @@ const Profile = () => {
                   )}
                 </CardContent>
                 {!is2FASetupOpen && is2FAEnabled && (
-                  <CardFooter>
+                  <CardFooter className="border-t bg-gray-50 pt-4">
                     <Button 
                       variant="outline" 
                       onClick={() => {

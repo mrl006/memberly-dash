@@ -18,13 +18,13 @@ const MemberHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200 py-4 px-6 flex justify-between items-center sticky top-0 z-30 w-full">
+    <header className="bg-white border-b border-gray-200 py-3 px-6 flex justify-between items-center sticky top-0 z-30 w-full">
       {/* Search Bar - Simplified */}
       <div className="flex md:flex-1 relative max-w-xs w-full">
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Search resources..."
-          className="pl-9 bg-white border-gray-200 focus:border-gray-300"
+          className="pl-9 bg-white border-gray-200 focus-visible:ring-primary/30"
         />
       </div>
       
@@ -38,14 +38,20 @@ const MemberHeader = () => {
           Get Help
         </Button>
         
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange-500" />
-        </Button>
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange-500" />
+          </Button>
+        </motion.div>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="relative rounded-full overflow-hidden h-10 w-10 p-0 border border-gray-200">
+            <motion.button 
+              className="relative rounded-full overflow-hidden h-10 w-10 p-0 border border-gray-200"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Avatar className="h-10 w-10">
                 <AvatarImage 
                   src="/lovable-uploads/5f2b6002-1195-4f70-aee9-c6de2dd470aa.png" 
@@ -55,7 +61,7 @@ const MemberHeader = () => {
                   JD
                 </AvatarFallback>
               </Avatar>
-            </button>
+            </motion.button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
