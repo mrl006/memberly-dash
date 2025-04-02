@@ -12,48 +12,91 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
+import { motion } from "framer-motion";
 
 const MemberHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200 py-3 px-6 flex justify-between items-center sticky top-0 z-30 w-full shadow-sm">
-      {/* Logo Section */}
-      <div 
+    <motion.header 
+      className="bg-gradient-to-r from-primary/5 via-background to-primary/5 backdrop-blur-sm border-b border-gray-200 py-4 px-6 flex justify-between items-center sticky top-0 z-30 w-full shadow-sm"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {/* Logo Section - Animated and enhanced */}
+      <motion.div 
         className="flex items-center cursor-pointer" 
         onClick={() => navigate("/member")}
+        whileHover={{ scale: 1.05 }}
+        transition={{ type: "spring", stiffness: 400, damping: 10 }}
       >
-        <div className="text-primary font-bold text-2xl mr-2">Memberly</div>
-        <span className="text-gray-600 text-sm hidden md:inline">Member Portal</span>
-      </div>
+        <motion.div 
+          className="bg-gradient-to-r from-primary/80 to-primary text-white font-bold text-2xl px-4 py-2 rounded-md shadow-md"
+          whileHover={{ 
+            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          Memberly
+        </motion.div>
+      </motion.div>
       
-      {/* Search Bar - New addition */}
-      <div className="hidden md:flex relative max-w-xs mx-4 flex-1">
+      {/* Search Bar - Enhanced with animation */}
+      <motion.div 
+        className="hidden md:flex relative max-w-xs mx-4 flex-1"
+        initial={{ opacity: 0, width: "90%" }}
+        animate={{ opacity: 1, width: "100%" }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+      >
         <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
         <Input
           placeholder="Search resources..."
-          className="pl-9 bg-gray-50 border-gray-200 focus:bg-white"
+          className="pl-9 bg-white/50 backdrop-blur-sm border-gray-200 focus:bg-white transition-all duration-300"
         />
-      </div>
+      </motion.div>
       
       <div className="flex items-center space-x-4">
-        <Button 
-          variant="outline" 
-          size="sm" 
-          onClick={() => navigate("/member/support")}
-          className="hidden sm:flex border-gray-200 hover:bg-gray-50 hover:text-primary"
+        <motion.div
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
         >
-          Get Help
-        </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => navigate("/member/support")}
+            className="hidden sm:flex border-gray-200 hover:bg-gray-50 hover:text-primary"
+          >
+            Get Help
+          </Button>
+        </motion.div>
         
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange-500" />
-        </Button>
+        <motion.div
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
+        >
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            <motion.span 
+              className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange-500"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ 
+                type: "spring", 
+                stiffness: 500,
+                damping: 15,
+                delay: 0.5
+              }}
+            />
+          </Button>
+        </motion.div>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative rounded-full overflow-hidden h-10 w-10 p-0 border border-gray-200">
+            <motion.button
+              className="relative rounded-full overflow-hidden h-10 w-10 p-0 border border-gray-200"
+              whileHover={{ scale: 1.1, borderColor: "rgba(var(--primary-rgb), 0.5)" }}
+              whileTap={{ scale: 0.95 }}
+            >
               <Avatar className="h-10 w-10">
                 <AvatarImage 
                   src="/lovable-uploads/0a3c5479-6eaf-42a3-a67e-9cc5f24a5216.png" 
@@ -63,7 +106,7 @@ const MemberHeader = () => {
                   JD
                 </AvatarFallback>
               </Avatar>
-            </Button>
+            </motion.button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56" align="end" forceMount>
             <DropdownMenuLabel className="font-normal">
@@ -88,7 +131,7 @@ const MemberHeader = () => {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header>
+    </motion.header>
   );
 };
 

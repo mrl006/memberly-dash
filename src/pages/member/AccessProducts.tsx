@@ -122,7 +122,7 @@ const AccessProducts = () => {
   
   const buttonVariants = {
     rest: { scale: 1 },
-    hover: { scale: 1.1 },
+    hover: { scale: 1.05 },
     tap: { scale: 0.95 }
   };
   
@@ -182,7 +182,7 @@ const AccessProducts = () => {
                 className={`h-full w-full overflow-hidden transition-all cursor-pointer flex flex-col ${product.bgColor} shadow-lg`}
                 onClick={() => handleAccessProduct(product)}
               >
-                <div className="flex flex-col items-center justify-center p-4 flex-grow">
+                <div className="flex flex-col items-center justify-center p-5 flex-grow">
                   <motion.div
                     className="flex flex-col items-center justify-center text-center h-full w-full"
                     animate={{
@@ -191,30 +191,29 @@ const AccessProducts = () => {
                     }}
                     transition={{ type: "spring", stiffness: 300, damping: 20 }}
                   >
-                    <h2 className={`text-xl md:text-2xl font-bold mb-2 ${product.textColor}`}>
+                    <h2 className={`text-xl md:text-2xl font-bold mb-3 ${product.textColor}`}>
                       {product.name}
                     </h2>
-                    <p className={`text-sm ${product.textColor} opacity-80 line-clamp-2`}>
+                    <p className={`text-sm ${product.textColor} opacity-90 line-clamp-2 mb-2`}>
                       {product.description}
                     </p>
                   </motion.div>
                 </div>
                 
-                <div className="p-3 bg-black/30 backdrop-blur-sm">
+                <div className="p-3 bg-black/20 backdrop-blur-sm">
                   <motion.div
                     variants={buttonVariants}
                     whileHover="hover"
                     whileTap="tap"
                   >
                     <Button 
-                      variant="ghost" 
-                      className={`text-white font-medium w-full relative overflow-hidden group`}
+                      variant="secondary" 
+                      className={`${product.textColor} font-medium w-full py-2 relative overflow-hidden group hover:opacity-90`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleAccessProduct(product);
                       }}
                     >
-                      <span className="absolute inset-0 w-0 bg-white/30 transition-all duration-300 ease-out group-hover:w-full"></span>
                       <span className="relative flex items-center justify-center gap-2">
                         Access
                         <motion.span 
