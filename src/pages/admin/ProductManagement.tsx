@@ -333,7 +333,6 @@ const ProductManagement = () => {
   const handleDialogOpenChange = (open: boolean) => {
     if (!open) {
       setActiveTab("details");
-      setCodeEditorTab("html");
       setNewProduct({
         name: "",
         price: "",
@@ -352,7 +351,6 @@ const ProductManagement = () => {
 
   const resetEditForm = () => {
     setActiveTab("details");
-    setCodeEditorTab("html");
     setSelectedProduct(null);
     setIsEditDialogOpen(false);
   };
