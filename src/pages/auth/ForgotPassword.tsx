@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { ArrowLeft, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle, Mail, CheckCircle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const ForgotPassword = () => {
@@ -44,6 +44,7 @@ const ForgotPassword = () => {
       toast({
         title: "Reset Email Sent",
         description: "Check your inbox for password reset instructions.",
+        icon: <CheckCircle className="h-4 w-4 text-green-500" />
       });
     }, 1500);
   };
@@ -51,6 +52,11 @@ const ForgotPassword = () => {
   if (isSubmitted) {
     return (
       <div className="text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="bg-green-100 p-3 rounded-full">
+            <Mail className="h-8 w-8 text-green-600" />
+          </div>
+        </div>
         <h2 className="text-2xl font-bold mb-2">Check Your Email</h2>
         <p className="mb-6 text-gray-600">
           We've sent password reset instructions to:
@@ -74,16 +80,18 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       <Link to="/login" className="inline-flex items-center text-sm mb-6 text-muted-foreground hover:text-primary">
         <ArrowLeft className="mr-1 h-4 w-4" />
         Back to login
       </Link>
       
-      <h2 className="text-2xl font-bold mb-2">Reset Password</h2>
-      <p className="mb-6 text-gray-600">
-        Enter your email address and we'll send you instructions to reset your password.
-      </p>
+      <div className="text-center mb-6">
+        <h2 className="text-2xl font-bold mb-2">Reset Password</h2>
+        <p className="text-gray-600">
+          Enter your email address and we'll send you instructions to reset your password.
+        </p>
+      </div>
       
       {errorMessage && (
         <Alert variant="destructive" className="mb-4">
@@ -103,6 +111,7 @@ const ForgotPassword = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
+            autoComplete="email"
           />
         </div>
         

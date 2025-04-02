@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, ShieldCheck, KeyRound } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
@@ -15,6 +15,7 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [loginType, setLoginType] = useState<"client" | "admin">("client");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -48,21 +49,27 @@ const Login = () => {
     
     setIsLoading(true);
     
-    // For demo purposes, simulate login
+    // For demo purposes, simulate login with delayed response
     setTimeout(() => {
       setIsLoading(false);
       
       // Admin login logic
-      if (email === "admin@memberly.com" && password === "admin123") {
-        toast({
-          title: "Admin Login Successful",
-          description: "Welcome to the admin dashboard!",
-        });
-        if (rememberMe) {
-          localStorage.setItem("memberly-user-email", email);
-          localStorage.setItem("memberly-user-type", "admin");
+      if (loginType === "admin") {
+        if (email === "admin@memberly.com" && password === "admin123") {
+          toast({
+            title: "Admin Login Successful",
+            description: "Welcome to the admin dashboard!",
+          });
+          if (rememberMe) {
+            localStorage.setItem("memberly-user-email", email);
+            localStorage.setItem("memberly-user-type", "admin");
+          }
+          navigate("/admin");
+          return;
         }
-        navigate("/admin");
+        
+        // Invalid admin credentials
+        setErrorMessage("Invalid admin credentials. Please try again.");
         return;
       }
       
@@ -86,8 +93,42 @@ const Login = () => {
   };
 
   return (
-    <div>
-      <h2 className="text-2xl font-bold mb-6 text-center">Sign In</h2>
+    <div className="space-y-6">
+      <div className="text-center">
+        <h2 className="text-2xl font-bold mb-2">Sign In</h2>
+        <p className="text-muted-foreground">Access your account</p>
+      </div>
+      
+      <div className="flex bg-muted rounded-md p-1 mb-6">
+        <button
+          type="button"
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            loginType === "client" 
+              ? "bg-background text-foreground shadow-sm" 
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setLoginType("client")}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <KeyRound className="h-4 w-4" />
+            Client Login
+          </span>
+        </button>
+        <button
+          type="button"
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+            loginType === "admin" 
+              ? "bg-background text-foreground shadow-sm" 
+              : "text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setLoginType("admin")}
+        >
+          <span className="flex items-center justify-center gap-2">
+            <ShieldCheck className="h-4 w-4" />
+            Admin Login
+          </span>
+        </button>
+      </div>
       
       {errorMessage && (
         <Alert variant="destructive" className="mb-4">
@@ -107,6 +148,7 @@ const Login = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
+            autoComplete="email"
           />
         </div>
         
@@ -125,6 +167,7 @@ const Login = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
+            autoComplete="current-password"
           />
         </div>
         
@@ -147,7 +190,7 @@ const Login = () => {
               Signing in...
             </>
           ) : (
-            "Sign In"
+            `Sign In as ${loginType === "admin" ? "Admin" : "Client"}`
           )}
         </Button>
       </form>
