@@ -28,6 +28,7 @@ import Profile from "./pages/member/Profile";
 import Subscriptions from "./pages/member/Subscriptions";
 import Downloads from "./pages/member/Downloads";
 import Support from "./pages/member/Support";
+import AccessProducts from "./pages/member/AccessProducts";
 
 // Misc pages
 import NotFound from "./pages/NotFound";
@@ -70,6 +71,7 @@ const App = () => (
             <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="downloads" element={<Downloads />} />
             <Route path="support" element={<Support />} />
+            <Route path="access-products" element={<AccessProducts />} />
           </Route>
 
           {/* Not found route */}

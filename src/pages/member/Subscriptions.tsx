@@ -3,10 +3,11 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText, Tag, AlertCircle, Check, X } from "lucide-react";
+import { Download, FileText, Tag, AlertCircle, Check, X, Key } from "lucide-react";
 import { getUserPurchasedProductsWithDetails } from "@/services/purchaseService";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Link } from "react-router-dom";
 
 const Subscriptions = () => {
   const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
@@ -57,7 +58,15 @@ const Subscriptions = () => {
   
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold tracking-tight">Your Subscriptions & Products</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <h1 className="text-2xl font-bold tracking-tight">Your Subscriptions & Products</h1>
+        <Link to="/member/access-products">
+          <Button>
+            <Key className="mr-2 h-4 w-4" />
+            Access Products
+          </Button>
+        </Link>
+      </div>
       
       <Tabs defaultValue="subscriptions" className="mt-6">
         <TabsList className="mb-4">

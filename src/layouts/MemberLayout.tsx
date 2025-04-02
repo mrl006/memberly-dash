@@ -10,7 +10,8 @@ import {
   LogOut,
   Menu,
   X,
-  Bell
+  Bell,
+  Key
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MemberHeader from "@/components/member/MemberHeader";
@@ -108,6 +109,19 @@ const MemberLayout = () => {
             >
               <CreditCard size={20} />
               <span>Subscriptions</span>
+            </NavLink>
+            <NavLink 
+              to="/member/access-products" 
+              className={({isActive}) => 
+                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                  isActive 
+                    ? "bg-primary/10 text-primary font-medium" 
+                    : "text-gray-700 hover:bg-gray-100"
+                }`
+              }
+            >
+              <Key size={20} />
+              <span>Access Products</span>
             </NavLink>
             <NavLink 
               to="/member/downloads" 
