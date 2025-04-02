@@ -43,8 +43,7 @@ const ForgotPassword = () => {
       setIsSubmitted(true);
       toast({
         title: "Reset Email Sent",
-        description: "Check your inbox for password reset instructions.",
-        icon: <CheckCircle className="h-4 w-4 text-green-500" />
+        description: "Check your inbox for password reset instructions."
       });
     }, 1500);
   };
