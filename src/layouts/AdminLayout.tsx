@@ -13,7 +13,8 @@ import {
   X,
   Key,
   UserPlus,
-  Package
+  Package,
+  CreditCard
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AdminHeader from "@/components/admin/AdminHeader";
@@ -94,6 +95,10 @@ const AdminLayout = () => {
             <NavLink to="/admin/plugin-store" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <Package size={20} />
               <span>Plugin Store</span>
+            </NavLink>
+            <NavLink to="/admin/payment-plugins" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
+              <CreditCard size={20} />
+              <span>Payment Plugins</span>
             </NavLink>
             <NavLink to="/admin/referrals" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <UserPlus size={20} />
