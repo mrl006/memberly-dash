@@ -28,6 +28,7 @@ import Subscriptions from "./pages/member/Subscriptions";
 import AdminLogin from "./pages/admin/AdminLogin";
 import ReferralManagement from "./pages/admin/ReferralManagement";
 import Referrals from "./pages/member/Referrals";
+import PluginStore from "./pages/admin/PluginStore";
 
 function App() {
   const router = createBrowserRouter([
@@ -84,6 +85,10 @@ function App() {
         {
           path: "referrals",
           element: <ReferralManagement />,
+        },
+        {
+          path: "plugin-store",
+          element: <PluginStore />,
         },
         {
           path: "support",
