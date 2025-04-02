@@ -40,7 +40,7 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
   };
   
   return (
-    <div className="code-editor-container">
+    <div className="flex flex-col border rounded-md overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
         <Label className={`text-sm font-medium ${getSyntaxHighlightClass()}`}>
           {language.toUpperCase()}
@@ -48,38 +48,17 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       </div>
       
       <div className="relative flex">
-        <div className="line-numbers py-2 pr-2 text-right text-gray-500 bg-gray-50 select-none font-mono text-xs">
+        <div className="w-12 py-2 pr-2 text-right text-gray-500 bg-gray-50 select-none font-mono text-xs overflow-hidden text-overflow-clip whitespace-pre">
           {getLineNumbers()}
         </div>
         
         <textarea
           value={editorValue}
           onChange={handleChange}
-          className="editor flex-1 p-2 font-mono text-sm resize-none focus:outline-none min-h-[300px] w-full"
+          className="flex-1 p-2 font-mono text-sm resize-none focus:outline-none min-h-[300px] w-full border-none font-family-monospace"
           spellCheck="false"
         />
       </div>
-      
-      <style jsx>{`
-        .code-editor-container {
-          display: flex;
-          flex-direction: column;
-          border-radius: 0.375rem;
-          overflow: hidden;
-        }
-        
-        .line-numbers {
-          width: 3rem;
-          overflow: hidden;
-          text-overflow: clip;
-          white-space: pre;
-        }
-        
-        .editor {
-          border: none;
-          font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-        }
-      `}</style>
     </div>
   );
 };
