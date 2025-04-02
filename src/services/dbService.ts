@@ -11,7 +11,7 @@ export interface Collection {
   findOneAndUpdate: (query: any, update: any, options?: any) => Promise<any>;
 }
 
-// Mock Collection implementation that uses localStorage
+// localStorage Collection implementation
 class LocalStorageCollection implements Collection {
   private collectionName: string;
 
