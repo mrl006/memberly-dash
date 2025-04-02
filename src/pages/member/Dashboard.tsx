@@ -115,7 +115,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 w-full">
       {/* Welcome Section with Stats */}
       <div className="bg-gradient-to-r from-blue-50 via-blue-50 to-white rounded-xl p-6 shadow-sm">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Welcome back, John!</h1>

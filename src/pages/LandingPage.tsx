@@ -1,15 +1,15 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Check, Clock, BarChart3, MousePointer, Shield, Zap, LineChart } from "lucide-react";
+import { ArrowRight, Check, Clock, BarChart3, MousePointer, Shield, Zap, LineChart, Facebook, Twitter, Instagram, Linkedin, Github, Mail } from "lucide-react";
 import { motion } from "framer-motion";
 
 const LandingPage = () => {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Navigation */}
-      <header className="bg-white border-b border-gray-100 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+      <header className="bg-white border-b border-gray-100 sticky top-0 z-50 w-full">
+        <div className="max-w-full px-4 md:px-8 lg:px-12 py-4 flex justify-between items-center">
           <div className="flex items-center">
             <h1 className="text-2xl font-bold text-primary">Memberly</h1>
           </div>
@@ -21,10 +21,10 @@ const LandingPage = () => {
           </nav>
           
           <div className="flex items-center space-x-4">
-            <Link to="/login">
+            <Link to="/auth/login">
               <Button variant="ghost" className="font-medium">Sign In</Button>
             </Link>
-            <Link to="/register">
+            <Link to="/auth/register">
               <Button className="font-medium">Get Started</Button>
             </Link>
           </div>
@@ -32,9 +32,9 @@ const LandingPage = () => {
       </header>
       
       {/* Hero section */}
-      <section className="relative bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] py-20 overflow-hidden">
+      <section className="relative bg-gradient-to-br from-[#f8f9fa] to-[#e9ecef] py-20 overflow-hidden w-full">
         <div className="absolute inset-0 bg-grid-pattern opacity-[0.03] pointer-events-none"></div>
-        <div className="container mx-auto px-6 flex flex-col lg:flex-row items-center">
+        <div className="max-w-full px-4 md:px-8 lg:px-12 flex flex-col lg:flex-row items-center">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -48,7 +48,7 @@ const LandingPage = () => {
               Get 50+ tools at an affordable price. For those who need premium membership features without the premium cost.
             </p>
             <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link to="/register">
+              <Link to="/auth/register">
                 <Button size="lg" className="w-full sm:w-auto bg-primary hover:bg-primary/90 font-medium px-8">
                   GET STARTED
                 </Button>
@@ -78,7 +78,7 @@ const LandingPage = () => {
               </div>
               <div className="bg-[#f8f9fc] relative overflow-hidden">
                 <img 
-                  src="/lovable-uploads/94519d56-0d06-4fbe-952f-0dd4bd06039c.png" 
+                  src="/lovable-uploads/ba86ff5c-feb3-4d0e-84d7-c502b9fc58e0.png" 
                   alt="Dashboard Preview" 
                   className="w-full object-cover"
                 />
@@ -89,7 +89,7 @@ const LandingPage = () => {
         </div>
         
         {/* Floating Stats */}
-        <div className="container mx-auto px-6 mt-20">
+        <div className="max-w-full px-4 md:px-8 lg:px-12 mt-20">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -121,8 +121,8 @@ const LandingPage = () => {
       </section>
       
       {/* Features with graphics */}
-      <section className="py-32 bg-white">
-        <div className="container mx-auto px-6">
+      <section className="py-32 bg-white w-full">
+        <div className="max-w-full px-4 md:px-8 lg:px-12">
           <div className="text-center mb-16">
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -196,8 +196,8 @@ const LandingPage = () => {
       </section>
       
       {/* Dashboard Preview Section */}
-      <section className="py-20 bg-gradient-to-br from-[#f5f7ff] to-[#ebf0ff]">
-        <div className="container mx-auto px-6">
+      <section className="py-20 bg-gradient-to-br from-[#f5f7ff] to-[#ebf0ff] w-full">
+        <div className="max-w-full px-4 md:px-8 lg:px-12">
           <div className="flex flex-col lg:flex-row items-center gap-12">
             <motion.div 
               initial={{ opacity: 0, x: -20 }}
@@ -225,7 +225,7 @@ const LandingPage = () => {
                   </li>
                 ))}
               </ul>
-              <Link to="/register">
+              <Link to="/auth/register">
                 <Button size="lg" className="px-8 font-medium">
                   Try It Now
                 </Button>
@@ -243,7 +243,7 @@ const LandingPage = () => {
                 <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 to-blue-500/20 rounded-xl blur-lg"></div>
                 <div className="relative overflow-hidden rounded-xl bg-white shadow-xl">
                   <img 
-                    src="/lovable-uploads/8cfe87fa-ee25-4cd6-830a-bd2a6dce6f5a.png" 
+                    src="/lovable-uploads/58de8bab-e8eb-4a80-a6c8-ee7be9e3dad3.png" 
                     alt="Dashboard Interface" 
                     className="w-full h-auto"
                   />
@@ -255,8 +255,8 @@ const LandingPage = () => {
       </section>
       
       {/* Pricing */}
-      <section id="pricing" className="py-20 bg-white">
-        <div className="container mx-auto px-6">
+      <section id="pricing" className="py-20 bg-white w-full">
+        <div className="max-w-full px-4 md:px-8 lg:px-12">
           <div className="text-center mb-16">
             <motion.h2 
               initial={{ opacity: 0, y: 20 }}
@@ -375,8 +375,8 @@ const LandingPage = () => {
       </section>
       
       {/* Testimonial Section */}
-      <section className="py-20 bg-[#f8f9fa]">
-        <div className="container mx-auto px-6">
+      <section className="py-20 bg-[#f8f9fa] w-full">
+        <div className="max-w-full px-4 md:px-8 lg:px-12">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -406,8 +406,8 @@ const LandingPage = () => {
       </section>
       
       {/* CTA */}
-      <section className="bg-gradient-to-r from-primary/90 to-blue-600/90 py-16">
-        <div className="container mx-auto px-6 text-center">
+      <section className="bg-gradient-to-r from-primary/90 to-blue-600/90 py-16 w-full">
+        <div className="max-w-full px-4 md:px-8 lg:px-12 text-center">
           <motion.h2 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -432,7 +432,7 @@ const LandingPage = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             viewport={{ once: true }}
           >
-            <Link to="/register">
+            <Link to="/auth/register">
               <Button size="lg" className="bg-white text-primary hover:bg-gray-100 px-8 py-6 text-lg font-medium">
                 Start Your Free Trial <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -441,55 +441,105 @@ const LandingPage = () => {
         </div>
       </section>
       
-      {/* Footer */}
-      <footer className="bg-[#1a1b4b] text-white py-12">
-        <div className="container mx-auto px-6">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold mb-4">Memberly</h3>
-              <p className="text-gray-300 mb-4">
-                The all-in-one membership platform for businesses of all sizes.
-              </p>
-              <div className="flex space-x-4">
-                {/* Social media icons would go here */}
+      {/* Enhanced Footer */}
+      <footer className="w-full">
+        <div className="bg-[#1a1b4b] text-white py-16">
+          <div className="max-w-full px-4 md:px-8 lg:px-12">
+            <div className="grid md:grid-cols-4 gap-8 mb-12">
+              <div>
+                <h3 className="text-xl font-bold mb-6">Memberly</h3>
+                <p className="text-gray-300 mb-6 leading-relaxed">
+                  The all-in-one membership platform for businesses of all sizes. Join us and experience the power of streamlined membership management.
+                </p>
+                <div className="flex space-x-4">
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    <Facebook size={20} />
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    <Twitter size={20} />
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    <Instagram size={20} />
+                  </a>
+                  <a href="#" className="text-gray-300 hover:text-white transition-colors">
+                    <Linkedin size={20} />
+                  </a>
+                </div>
+              </div>
+              
+              <div>
+                <h4 className="font-bold mb-6 text-lg">Product</h4>
+                <ul className="space-y-3">
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">Features</Link></li>
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">Pricing</Link></li>
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">Testimonials</Link></li>
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">FAQ</Link></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-bold mb-6 text-lg">Resources</h4>
+                <ul className="space-y-3">
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">Documentation</Link></li>
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">Blog</Link></li>
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">Support</Link></li>
+                  <li><Link to="#" className="text-gray-300 hover:text-white transition-colors block">API Docs</Link></li>
+                </ul>
+              </div>
+              
+              <div>
+                <h4 className="font-bold mb-6 text-lg">Contact Us</h4>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <Mail className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-300">contact@memberly.com</span>
+                  </li>
+                  <li>
+                    <Button variant="outline" className="mt-4 w-full border-gray-700 text-gray-300 hover:bg-gray-800 hover:text-white transition-colors">
+                      Get in Touch
+                    </Button>
+                  </li>
+                </ul>
+                <div className="mt-6 bg-[#121331] p-4 rounded-lg">
+                  <h5 className="font-medium mb-2 text-sm text-gray-300">Subscribe to our newsletter</h5>
+                  <div className="flex gap-2">
+                    <input 
+                      type="email" 
+                      placeholder="Your email" 
+                      className="bg-[#232552] border border-gray-700 rounded px-3 py-2 text-sm w-full text-white focus:outline-none focus:ring-1 focus:ring-primary"
+                    />
+                    <Button className="bg-primary hover:bg-primary/90 text-white">
+                      <ArrowRight size={16} />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div>
-              <h4 className="font-bold mb-4">Product</h4>
-              <ul className="space-y-2">
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Features</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Pricing</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Testimonials</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">FAQ</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-bold mb-4">Resources</h4>
-              <ul className="space-y-2">
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Documentation</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Blog</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Support</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">API Docs</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-bold mb-4">Company</h4>
-              <ul className="space-y-2">
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">About</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Careers</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Privacy Policy</Link></li>
-                <li><Link to="#" className="text-gray-300 hover:text-white transition-colors">Terms of Service</Link></li>
-              </ul>
+            <div className="pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+              <p className="text-gray-400">
+                &copy; {new Date().getFullYear()} Memberly. All rights reserved.
+              </p>
+              <div className="flex space-x-6">
+                <Link to="#" className="text-gray-400 text-sm hover:text-gray-300 transition-colors">Privacy Policy</Link>
+                <Link to="#" className="text-gray-400 text-sm hover:text-gray-300 transition-colors">Terms of Service</Link>
+                <Link to="#" className="text-gray-400 text-sm hover:text-gray-300 transition-colors">Cookie Policy</Link>
+              </div>
             </div>
           </div>
-          
-          <div className="border-t border-gray-800 mt-12 pt-8 text-center">
-            <p className="text-gray-400">
-              &copy; {new Date().getFullYear()} Memberly. All rights reserved.
+        </div>
+        
+        {/* Bottom banner */}
+        <div className="bg-[#121331] text-white py-4 w-full">
+          <div className="max-w-full px-4 md:px-8 lg:px-12 flex flex-col md:flex-row justify-between items-center">
+            <p className="text-sm text-gray-400 mb-4 md:mb-0">
+              Designed and developed with ❤️ by the Memberly team
             </p>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs text-gray-400">Powered by</span>
+              <Github size={16} className="text-gray-400" />
+              <span className="text-xs font-medium text-gray-300">Memberly Technology</span>
+            </div>
           </div>
         </div>
       </footer>
