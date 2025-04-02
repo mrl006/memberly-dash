@@ -7,19 +7,18 @@ import "./App.css";
 import AdminLayout from "./layouts/AdminLayout";
 import MemberLayout from "./layouts/MemberLayout";
 import AuthLayout from "./layouts/AuthLayout";
-import { Login as LoginPage } from "./pages/auth/Login";
-import { Register as RegisterPage } from "./pages/auth/Register";
+import Login from "./pages/auth/Login";
+import Register from "./pages/auth/Register";
 import NotFound from "./pages/NotFound";
 import LandingPage from "./pages/LandingPage";
-import { Dashboard as AdminDashboard } from "./pages/admin/Dashboard";
-import { UserManagement as UsersPage } from "./pages/admin/UserManagement";
-import ProductsPage from "./pages/admin/ProductManagement";
-import { CouponManagement as CouponsPage } from "./pages/admin/CouponManagement";
+import Dashboard from "./pages/admin/Dashboard";
+import { UserManagement } from "./pages/admin/UserManagement";
+import ProductManagement from "./pages/admin/ProductManagement";
+import { CouponManagement } from "./pages/admin/CouponManagement";
 import SupportTickets from "./pages/admin/SupportTickets";
 import Settings from "./pages/admin/Settings";
-import { Dashboard as MemberDashboard } from "./pages/member/Dashboard";
-import { Profile as MemberProfile } from "./pages/member/Profile";
-import ProductManagement from "./pages/admin/ProductManagement";
+import MemberDashboard from "./pages/member/Dashboard";
+import Profile from "./pages/member/Profile";
 import DashboardSettings from "./pages/admin/DashboardSettings";
 import ApiKeyManagement from "./pages/admin/ApiKeyManagement";
 
@@ -35,11 +34,11 @@ function App() {
       children: [
         {
           path: "login",
-          element: <LoginPage />,
+          element: <Login />,
         },
         {
           path: "register",
-          element: <RegisterPage />,
+          element: <Register />,
         },
       ],
     },
@@ -49,7 +48,7 @@ function App() {
       children: [
         {
           index: true,
-          element: <AdminDashboard />,
+          element: <Dashboard />,
         },
         {
           path: "dashboard-settings",
@@ -57,7 +56,7 @@ function App() {
         },
         {
           path: "users",
-          element: <UsersPage />,
+          element: <UserManagement />,
         },
         {
           path: "products",
@@ -69,7 +68,7 @@ function App() {
         },
         {
           path: "coupons",
-          element: <CouponsPage />,
+          element: <CouponManagement />,
         },
         {
           path: "support",
@@ -91,7 +90,7 @@ function App() {
         },
         {
           path: "profile",
-          element: <MemberProfile />,
+          element: <Profile />,
         },
       ],
     },
