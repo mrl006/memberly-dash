@@ -1,10 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { 
   Bold, Italic, Link, List, ListOrdered, Code, AlignLeft, AlignCenter, AlignRight, 
   Image, Heading1, Heading2, Underline, Table, Square, FileCode, PanelRightOpen, 
-  Type, Paragraph, Quote, CheckSquare, Minus, Palette
+  Type, Quote, CheckSquare, Minus, Palette
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -134,7 +133,6 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
     setTableCols(3);
   };
 
-  // HTML editing commands
   const textFormattingCommands = language === "html" ? [
     { 
       icon: <Bold size={16} />, 
@@ -170,7 +168,7 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       action: () => insertAtCursor('', true, '<h2>', '</h2>') 
     },
     { 
-      icon: <Paragraph size={16} />, 
+      icon: <Type size={16} />, 
       tooltip: "Paragraph", 
       action: () => insertAtCursor('', true, '<p>', '</p>') 
     },
@@ -274,7 +272,6 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
     },
   ] : [];
 
-  // Combine all commands for easier rendering
   const allCommandGroups = language === "html" ? [
     { name: "Text", commands: textFormattingCommands },
     { name: "Headings", commands: headingCommands },
@@ -323,7 +320,6 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
         )}
       </div>
       
-      {/* Link Dialog */}
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -365,7 +361,6 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Image Dialog */}
       <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -407,7 +402,6 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
         </DialogContent>
       </Dialog>
 
-      {/* Table Dialog */}
       <Dialog open={tableDialogOpen} onOpenChange={setTableDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
