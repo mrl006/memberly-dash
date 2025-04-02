@@ -1,203 +1,177 @@
 
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, FileText, Tag, AlertCircle, Check, X, Key } from "lucide-react";
-import { getUserPurchasedProductsWithDetails } from "@/services/purchaseService";
-import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Link } from "react-router-dom";
+import { Progress } from "@/components/ui/progress";
+import { CreditCard, Check, X } from "lucide-react";
 
 const Subscriptions = () => {
-  const [activeSubscriptions, setActiveSubscriptions] = useState<any[]>([]);
-  const [digitalProducts, setDigitalProducts] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-  
-  useEffect(() => {
-    const loadPurchasedProducts = async () => {
-      try {
-        setIsLoading(true);
-        // In a real app, this would be the actual user ID from auth
-        const currentUserId = "1"; // Mock user ID for demo purposes
-        
-        const purchasedProducts = await getUserPurchasedProductsWithDetails(currentUserId);
-        
-        // Filter into subscriptions and digital products
-        const subscriptions = purchasedProducts.filter(p => p.type === "Membership" || p.type === "subscription");
-        const downloads = purchasedProducts.filter(p => p.type === "Digital Download" || p.type === "Course" || p.type === "digital");
-        
-        setActiveSubscriptions(subscriptions);
-        setDigitalProducts(downloads);
-      } catch (error) {
-        console.error("Error loading purchases:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load your subscriptions and purchases",
-          variant: "destructive"
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    loadPurchasedProducts();
-  }, [toast]);
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center space-y-4">
-          <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full mx-auto"></div>
-          <p className="text-gray-500">Loading your subscriptions...</p>
-        </div>
-      </div>
-    );
-  }
-  
+  // Dummy subscription data
+  const subscription = {
+    name: "Professional Plan",
+    status: "active",
+    price: "$19.99/month",
+    nextBillingDate: "May 28, 2023",
+    daysRemaining: 18,
+    features: [
+      "Full Access to Courses",
+      "Premium Downloads",
+      "Live Webinars",
+      "Priority Support"
+    ]
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h1 className="text-2xl font-bold tracking-tight">Your Subscriptions & Products</h1>
-        <Link to="/member/access-products">
-          <Button>
-            <Key className="mr-2 h-4 w-4" />
-            Access Products
-          </Button>
-        </Link>
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight">My Subscription</h1>
+        <p className="text-gray-500 mt-1">Manage your subscription and billing details</p>
       </div>
       
-      <Tabs defaultValue="subscriptions" className="mt-6">
-        <TabsList className="mb-4">
-          <TabsTrigger value="subscriptions">Memberships & Subscriptions</TabsTrigger>
-          <TabsTrigger value="purchases">Digital Products</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="subscriptions">
-          <div className="grid gap-6 md:grid-cols-2">
-            {activeSubscriptions.length > 0 ? (
-              activeSubscriptions.map((subscription) => (
-                <Card key={subscription.id} className="relative overflow-hidden">
-                  {subscription.purchaseInfo?.status === "active" && (
-                    <div className="absolute top-0 right-0">
-                      <Badge className="rounded-none rounded-bl-md bg-green-600">
-                        Active
-                      </Badge>
-                    </div>
-                  )}
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      <Tag className="h-5 w-5" />
-                      <CardTitle>{subscription.name}</CardTitle>
-                    </div>
-                    <CardDescription>
-                      {subscription.description || "Membership subscription"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Price:</span>
-                        <span className="font-medium">${subscription.price}/month</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Purchased:</span>
-                        <span className="font-medium">
-                          {new Date(subscription.purchaseInfo?.purchaseDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Status:</span>
-                        <div className="flex items-center">
-                          {subscription.purchaseInfo?.status === "active" ? (
-                            <>
-                              <Check className="mr-1 h-4 w-4 text-green-500" />
-                              <span className="text-green-500">Active</span>
-                            </>
-                          ) : (
-                            <>
-                              <X className="mr-1 h-4 w-4 text-red-500" />
-                              <span className="text-red-500">Inactive</span>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button variant="outline" className="w-full">
-                      Manage Subscription
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <div className="col-span-2 border rounded-lg p-6 text-center">
-                <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Active Memberships</h3>
-                <p className="text-muted-foreground mb-4">
-                  You don't have any active memberships or subscriptions.
-                </p>
-                <Button>Browse Memberships</Button>
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Current Subscription */}
+        <Card className="md:col-span-2 border-none shadow-sm">
+          <CardHeader className="pb-2 border-b">
+            <div className="flex justify-between items-center">
+              <CardTitle>Current Plan</CardTitle>
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                {subscription.status === "active" ? "Active" : "Inactive"}
+              </Badge>
+            </div>
+            <CardDescription>
+              Your subscription details and current status
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-medium text-lg">{subscription.name}</h3>
+                <p className="text-primary font-medium">{subscription.price}</p>
               </div>
-            )}
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="purchases">
-          <div className="grid gap-6 md:grid-cols-2">
-            {digitalProducts.length > 0 ? (
-              digitalProducts.map((product) => (
-                <Card key={product.id}>
-                  <CardHeader>
-                    <div className="flex items-center gap-2">
-                      {product.type === "Digital Download" || product.type === "digital" ? (
-                        <Download className="h-5 w-5" />
-                      ) : (
-                        <FileText className="h-5 w-5" />
-                      )}
-                      <CardTitle>{product.name}</CardTitle>
-                    </div>
-                    <CardDescription>
-                      {product.description || "Digital product"}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Price:</span>
-                        <span className="font-medium">${product.price}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Purchased:</span>
-                        <span className="font-medium">
-                          {new Date(product.purchaseInfo?.purchaseDate).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button className="w-full">
-                      <Download className="mr-2 h-4 w-4" />
-                      Download
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))
-            ) : (
-              <div className="col-span-2 border rounded-lg p-6 text-center">
-                <AlertCircle className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium mb-2">No Digital Products</h3>
-                <p className="text-muted-foreground mb-4">
-                  You haven't purchased any digital products or downloads yet.
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Current Period</span>
+                  <span>{subscription.daysRemaining} days remaining</span>
+                </div>
+                <Progress value={100 - (subscription.daysRemaining / 30) * 100} className="h-2" />
+                <p className="text-sm text-muted-foreground">
+                  Next billing date: {subscription.nextBillingDate}
                 </p>
-                <Button>Browse Products</Button>
               </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+              
+              <div className="pt-2 border-t">
+                <h4 className="font-medium mb-3">Included in your plan:</h4>
+                <ul className="space-y-2">
+                  {subscription.features.map((feature, index) => (
+                    <li key={index} className="flex items-center text-sm">
+                      <Check className="h-4 w-4 text-green-500 mr-2" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t bg-gray-50 py-3 flex justify-between">
+            <Button variant="outline" size="sm">
+              Change Plan
+            </Button>
+            <Button variant="destructive" size="sm">
+              Cancel Subscription
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        {/* Payment Method */}
+        <Card className="border-none shadow-sm">
+          <CardHeader className="pb-2 border-b">
+            <CardTitle>Payment Method</CardTitle>
+            <CardDescription>
+              Manage your billing details
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="flex items-center space-x-4 mb-6">
+              <div className="rounded-md border border-gray-200 p-2 bg-gray-50">
+                <CreditCard className="h-8 w-8 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-medium">Visa ending in 4242</h3>
+                <p className="text-sm text-gray-500">Expires 12/2024</p>
+              </div>
+            </div>
+            
+            <div className="space-y-2 border-t pt-4">
+              <p className="text-sm font-medium">Billing Address</p>
+              <p className="text-sm text-gray-500">
+                123 Main Street<br />
+                Anytown, CA 12345<br />
+                United States
+              </p>
+            </div>
+          </CardContent>
+          <CardFooter className="border-t bg-gray-50 py-3">
+            <Button variant="outline" size="sm">
+              Update Payment Method
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        {/* Billing History */}
+        <Card className="md:col-span-3 border-none shadow-sm">
+          <CardHeader className="pb-2 border-b">
+            <CardTitle>Billing History</CardTitle>
+            <CardDescription>
+              Your payment history and receipts
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-6">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-left text-xs uppercase tracking-wider text-gray-500 border-b">
+                    <th className="px-4 py-3 font-medium">Date</th>
+                    <th className="px-4 py-3 font-medium">Description</th>
+                    <th className="px-4 py-3 font-medium">Amount</th>
+                    <th className="px-4 py-3 font-medium">Status</th>
+                    <th className="px-4 py-3 font-medium">Receipt</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  <tr>
+                    <td className="px-4 py-4 text-sm">Apr 28, 2023</td>
+                    <td className="px-4 py-4 text-sm">Professional Plan - Monthly</td>
+                    <td className="px-4 py-4 text-sm">$19.99</td>
+                    <td className="px-4 py-4 text-sm">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Paid</Badge>
+                    </td>
+                    <td className="px-4 py-4 text-sm">
+                      <Button variant="link" size="sm" className="h-auto p-0">
+                        Download
+                      </Button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-4 text-sm">Mar 28, 2023</td>
+                    <td className="px-4 py-4 text-sm">Professional Plan - Monthly</td>
+                    <td className="px-4 py-4 text-sm">$19.99</td>
+                    <td className="px-4 py-4 text-sm">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">Paid</Badge>
+                    </td>
+                    <td className="px-4 py-4 text-sm">
+                      <Button variant="link" size="sm" className="h-auto p-0">
+                        Download
+                      </Button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

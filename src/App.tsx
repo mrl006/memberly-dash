@@ -24,6 +24,7 @@ import ApiKeyManagement from "./pages/admin/ApiKeyManagement";
 import AccessProducts from "./pages/member/AccessProducts";
 import Downloads from "./pages/member/Downloads";
 import Support from "./pages/member/Support";
+import Subscriptions from "./pages/member/Subscriptions";
 
 function App() {
   const router = createBrowserRouter([
@@ -94,6 +95,10 @@ function App() {
         {
           path: "profile",
           element: <Profile />,
+        },
+        {
+          path: "subscriptions",
+          element: <Subscriptions />,
         },
         {
           path: "access-products",
