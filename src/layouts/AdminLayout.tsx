@@ -58,55 +58,55 @@ const AdminLayout = () => {
 
       {/* Sidebar */}
       <aside 
-        className={`bg-sidebar w-64 flex-shrink-0 flex-col ${
+        className={`bg-blue-500 w-64 flex-shrink-0 flex-col ${
           showSidebar ? "flex" : "hidden"
         } fixed inset-y-0 lg:flex z-40`}
       >
-        <div className="p-4 border-b border-sidebar-border">
-          <h1 className="text-2xl font-bold text-sidebar-foreground">Memberly</h1>
-          <p className="text-sm text-sidebar-foreground/80">Admin Panel</p>
+        <div className="p-4 text-white text-center">
+          <h1 className="text-2xl font-bold">Memberly</h1>
+          <p className="text-sm">Admin Panel</p>
         </div>
         
         <div className="flex flex-col flex-grow overflow-y-auto">
           <nav className="flex-1 px-2 py-4 space-y-1">
-            <NavLink to="/admin" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`} end>
+            <NavLink to="/admin" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`} end>
               <LayoutDashboard size={20} />
               <span>Dashboard</span>
             </NavLink>
-            <NavLink to="/admin/dashboard-settings" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/dashboard-settings" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <BarChart size={20} />
               <span>Dashboard Settings</span>
             </NavLink>
-            <NavLink to="/admin/users" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/users" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <Users size={20} />
               <span>Users</span>
             </NavLink>
-            <NavLink to="/admin/products" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/products" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <ShoppingBag size={20} />
               <span>Products</span>
             </NavLink>
-            <NavLink to="/admin/api-keys" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/api-keys" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-white/10"}`}>
               <Key size={20} />
               <span>API Keys</span>
             </NavLink>
-            <NavLink to="/admin/coupons" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/coupons" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <Tags size={20} />
               <span>Coupons</span>
             </NavLink>
-            <NavLink to="/admin/support" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/support" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <LifeBuoy size={20} />
               <span>Support</span>
             </NavLink>
-            <NavLink to="/admin/settings" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+            <NavLink to="/admin/settings" className={({isActive}) => `flex items-center gap-3 px-4 py-2 rounded-md text-white ${isActive ? "bg-blue-600 font-medium" : "hover:bg-blue-600"}`}>
               <Settings size={20} />
               <span>Settings</span>
             </NavLink>
           </nav>
           
-          <div className="p-4 border-t border-sidebar-border mt-auto">
+          <div className="p-4 border-t border-blue-400 mt-auto">
             <button 
               onClick={handleLogout}
-              className="sidebar-link w-full justify-center"
+              className="flex items-center gap-3 w-full px-4 py-2 rounded-md text-white hover:bg-blue-600"
             >
               <LogOut size={20} />
               <span>Logout</span>
