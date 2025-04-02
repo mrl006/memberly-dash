@@ -12,7 +12,8 @@ import {
   Menu,
   X,
   Bell,
-  Search
+  Search,
+  BarChart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +65,10 @@ const AdminLayout = () => {
             <NavLink to="/admin" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`} end>
               <LayoutDashboard size={20} />
               <span>Dashboard</span>
+            </NavLink>
+            <NavLink to="/admin/dashboard-settings" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
+              <BarChart size={20} />
+              <span>Dashboard Settings</span>
             </NavLink>
             <NavLink to="/admin/users" className={({isActive}) => `sidebar-link ${isActive ? "active" : ""}`}>
               <Users size={20} />

@@ -15,9 +15,12 @@ import {
   LineChart,
   Line
 } from "recharts";
-import { Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight } from "lucide-react";
-import { getAnalyticsCollection } from "@/services/dbService";
+import { Users, ShoppingCart, DollarSign, ArrowUpRight, ArrowDownRight, Save } from "lucide-react";
+import { getAnalyticsCollection, updateDashboardAnalytics } from "@/services/dbService";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { toast } from "@/hooks/use-toast";
+import { Input } from "@/components/ui/input";
 
 interface DashboardData {
   revenueData: Array<{name: string, total: number}>;
@@ -34,6 +37,13 @@ interface DashboardData {
 const Dashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedMetrics, setEditedMetrics] = useState({
+    totalRevenue: 0,
+    activeSubscriptions: 0,
+    totalMembers: 0,
+    churnRate: ""
+  });
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28"];
 
   useEffect(() => {
@@ -45,10 +55,21 @@ const Dashboard = () => {
           const data = await analyticsCollection.findOne({ id: "dashboard-data" });
           if (data) {
             setDashboardData(data);
+            setEditedMetrics({
+              totalRevenue: data.overallMetrics.totalRevenue,
+              activeSubscriptions: data.overallMetrics.activeSubscriptions,
+              totalMembers: data.overallMetrics.totalMembers,
+              churnRate: data.overallMetrics.churnRate
+            });
           }
         }
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data",
+          variant: "destructive"
+        });
       } finally {
         setIsLoading(false);
       }
@@ -57,17 +78,65 @@ const Dashboard = () => {
     fetchDashboardData();
   }, []);
 
+  const handleSaveMetrics = async () => {
+    try {
+      if (!dashboardData) return;
+      
+      const updatedData = {
+        ...dashboardData,
+        overallMetrics: {
+          ...editedMetrics
+        }
+      };
+      
+      const success = await updateDashboardAnalytics(updatedData);
+      
+      if (success) {
+        setDashboardData(updatedData);
+        setIsEditing(false);
+        toast({
+          title: "Success",
+          description: "Dashboard metrics updated successfully",
+        });
+      } else {
+        throw new Error("Failed to update metrics");
+      }
+    } catch (error) {
+      console.error("Error updating metrics:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update dashboard metrics",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleEditMetric = (field: string, value: any) => {
+    setEditedMetrics(prev => ({
+      ...prev,
+      [field]: field === 'churnRate' ? value : Number(value)
+    }));
+  };
+
   if (isLoading) {
     return <DashboardSkeleton />;
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Overview of your membership platform's performance.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">
+            Overview of your membership platform's performance.
+          </p>
+        </div>
+        <Button 
+          variant={isEditing ? "default" : "outline"} 
+          onClick={() => setIsEditing(!isEditing)}
+        >
+          {isEditing ? "Cancel Editing" : "Edit Metrics"}
+        </Button>
       </div>
 
       {/* Stats Overview */}
@@ -78,11 +147,24 @@ const Dashboard = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${dashboardData?.overallMetrics.totalRevenue?.toLocaleString() || "0"}</div>
-            <div className="flex items-center text-sm text-green-600 pt-1">
-              <ArrowUpRight className="mr-1 h-4 w-4" />
-              <span>+18.2% from last month</span>
-            </div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Input 
+                  type="number" 
+                  value={editedMetrics.totalRevenue} 
+                  onChange={(e) => handleEditMetric('totalRevenue', e.target.value)}
+                  className="text-xl font-bold"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">${dashboardData?.overallMetrics.totalRevenue?.toLocaleString() || "0"}</div>
+                <div className="flex items-center text-sm text-green-600 pt-1">
+                  <ArrowUpRight className="mr-1 h-4 w-4" />
+                  <span>+18.2% from last month</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
         
@@ -92,11 +174,24 @@ const Dashboard = () => {
             <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.overallMetrics.activeSubscriptions || "0"}</div>
-            <div className="flex items-center text-sm text-green-600 pt-1">
-              <ArrowUpRight className="mr-1 h-4 w-4" />
-              <span>+4.3% from last month</span>
-            </div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Input 
+                  type="number" 
+                  value={editedMetrics.activeSubscriptions} 
+                  onChange={(e) => handleEditMetric('activeSubscriptions', e.target.value)}
+                  className="text-xl font-bold"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{dashboardData?.overallMetrics.activeSubscriptions || "0"}</div>
+                <div className="flex items-center text-sm text-green-600 pt-1">
+                  <ArrowUpRight className="mr-1 h-4 w-4" />
+                  <span>+4.3% from last month</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
         
@@ -106,11 +201,24 @@ const Dashboard = () => {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.overallMetrics.totalMembers || "0"}</div>
-            <div className="flex items-center text-sm text-green-600 pt-1">
-              <ArrowUpRight className="mr-1 h-4 w-4" />
-              <span>+12.7% from last month</span>
-            </div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Input 
+                  type="number" 
+                  value={editedMetrics.totalMembers} 
+                  onChange={(e) => handleEditMetric('totalMembers', e.target.value)}
+                  className="text-xl font-bold"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{dashboardData?.overallMetrics.totalMembers || "0"}</div>
+                <div className="flex items-center text-sm text-green-600 pt-1">
+                  <ArrowUpRight className="mr-1 h-4 w-4" />
+                  <span>+12.7% from last month</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
         
@@ -120,14 +228,36 @@ const Dashboard = () => {
             <ArrowDownRight className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData?.overallMetrics.churnRate || "0"}%</div>
-            <div className="flex items-center text-sm text-red-600 pt-1">
-              <ArrowUpRight className="mr-1 h-4 w-4" />
-              <span>+0.3% from last month</span>
-            </div>
+            {isEditing ? (
+              <div className="space-y-2">
+                <Input 
+                  type="text" 
+                  value={editedMetrics.churnRate} 
+                  onChange={(e) => handleEditMetric('churnRate', e.target.value)}
+                  className="text-xl font-bold"
+                />
+              </div>
+            ) : (
+              <>
+                <div className="text-2xl font-bold">{dashboardData?.overallMetrics.churnRate || "0"}%</div>
+                <div className="flex items-center text-sm text-red-600 pt-1">
+                  <ArrowUpRight className="mr-1 h-4 w-4" />
+                  <span>+0.3% from last month</span>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      {isEditing && (
+        <div className="flex justify-end">
+          <Button onClick={handleSaveMetrics} className="flex items-center gap-2">
+            <Save className="h-4 w-4" />
+            Save Changes
+          </Button>
+        </div>
+      )}
 
       {/* Charts */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

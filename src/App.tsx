@@ -20,6 +20,7 @@ import ProductManagement from "./pages/admin/ProductManagement";
 import CouponManagement from "./pages/admin/CouponManagement";
 import SupportTickets from "./pages/admin/SupportTickets";
 import Settings from "./pages/admin/Settings";
+import DashboardSettings from "./pages/admin/DashboardSettings";
 
 // Member pages
 import MemberDashboard from "./pages/member/Dashboard";
@@ -59,6 +60,7 @@ const App = () => (
             <Route path="coupons" element={<CouponManagement />} />
             <Route path="support" element={<SupportTickets />} />
             <Route path="settings" element={<Settings />} />
+            <Route path="dashboard-settings" element={<DashboardSettings />} />
           </Route>
 
           {/* Member routes */}
