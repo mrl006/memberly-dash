@@ -92,15 +92,9 @@ const MemberLayout = () => {
             animate="open"
             exit="closed"
           >
-            <div className="p-4 border-b border-gray-200 flex items-center justify-center">
-              <motion.div
-                className="text-2xl font-bold text-primary bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-2 rounded-md"
-                whileHover={{ scale: 1.05 }}
-                onClick={() => navigate("/member")}
-                style={{ cursor: "pointer" }}
-              >
-                {/* Memberly text removed here */}
-              </motion.div>
+            <div className="p-4 border-b border-gray-200">
+              {/* This div remains as a spacer but without content */}
+              <div className="h-10"></div>
             </div>
             
             <div className="flex flex-col flex-grow overflow-y-auto">
