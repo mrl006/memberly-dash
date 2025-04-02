@@ -92,9 +92,19 @@ const MemberLayout = () => {
             animate="open"
             exit="closed"
           >
-            <div className="p-4 border-b border-gray-200">
-              {/* This div remains as a spacer but without content */}
-              <div className="h-10"></div>
+            <div className="p-4 border-b border-gray-200 flex items-center justify-center">
+              <motion.div
+                className="flex items-center justify-center"
+                whileHover={{ scale: 1.05 }}
+                onClick={() => navigate("/member")}
+                style={{ cursor: "pointer" }}
+              >
+                <img 
+                  src="/lovable-uploads/0a3c5479-6eaf-42a3-a67e-9cc5f24a5216.png" 
+                  alt="Brand Logo" 
+                  className="h-10 w-auto"
+                />
+              </motion.div>
             </div>
             
             <div className="flex flex-col flex-grow overflow-y-auto">
