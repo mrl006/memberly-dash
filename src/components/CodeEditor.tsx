@@ -1,9 +1,17 @@
 
 import { useState, useEffect } from "react";
 import { Label } from "@/components/ui/label";
-import { Bold, Italic, Link, List, ListOrdered, Code, AlignLeft, AlignCenter, AlignRight, Image, Heading1, Heading2, Underline } from "lucide-react";
+import { 
+  Bold, Italic, Link, List, ListOrdered, Code, AlignLeft, AlignCenter, AlignRight, 
+  Image, Heading1, Heading2, Underline, Table, Square, FileCode, PanelRightOpen, 
+  Type, Paragraph, Quote, CheckSquare, Minus, Palette
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DialogTrigger, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label as UILabel } from "@/components/ui/label";
 
 interface CodeEditorProps {
   language: "html" | "css" | "javascript";
@@ -14,6 +22,16 @@ interface CodeEditorProps {
 const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
   const [editorValue, setEditorValue] = useState(value);
   const [textAreaRef, setTextAreaRef] = useState<HTMLTextAreaElement | null>(null);
+  const [viewMode, setViewMode] = useState<"code" | "preview">("code");
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
+  const [linkUrl, setLinkUrl] = useState("https://");
+  const [linkText, setLinkText] = useState("Link text");
+  const [imageDialogOpen, setImageDialogOpen] = useState(false);
+  const [imageUrl, setImageUrl] = useState("https://");
+  const [imageAlt, setImageAlt] = useState("Image description");
+  const [tableDialogOpen, setTableDialogOpen] = useState(false);
+  const [tableRows, setTableRows] = useState(3);
+  const [tableCols, setTableCols] = useState(3);
   
   useEffect(() => {
     setEditorValue(value);
@@ -69,8 +87,55 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
     }, 0);
   };
 
+  const handleInsertLink = () => {
+    const linkHtml = `<a href="${linkUrl}" title="${linkText}">${linkText}</a>`;
+    insertAtCursor(linkHtml);
+    setLinkDialogOpen(false);
+    setLinkUrl("https://");
+    setLinkText("Link text");
+  };
+
+  const handleInsertImage = () => {
+    const imageHtml = `<img src="${imageUrl}" alt="${imageAlt}" width="100%" />`;
+    insertAtCursor(imageHtml);
+    setImageDialogOpen(false);
+    setImageUrl("https://");
+    setImageAlt("Image description");
+  };
+
+  const handleInsertTable = () => {
+    let tableHtml = '<table class="w-full border-collapse border border-gray-300">\n';
+    tableHtml += '  <thead>\n    <tr>\n';
+    
+    // Add header cells
+    for (let i = 0; i < tableCols; i++) {
+      tableHtml += '      <th class="border border-gray-300 p-2">Header ' + (i + 1) + '</th>\n';
+    }
+    
+    tableHtml += '    </tr>\n  </thead>\n  <tbody>\n';
+    
+    // Add rows
+    for (let i = 0; i < tableRows; i++) {
+      tableHtml += '    <tr>\n';
+      
+      // Add cells
+      for (let j = 0; j < tableCols; j++) {
+        tableHtml += '      <td class="border border-gray-300 p-2">Cell ' + (i + 1) + '-' + (j + 1) + '</td>\n';
+      }
+      
+      tableHtml += '    </tr>\n';
+    }
+    
+    tableHtml += '  </tbody>\n</table>';
+    
+    insertAtCursor(tableHtml);
+    setTableDialogOpen(false);
+    setTableRows(3);
+    setTableCols(3);
+  };
+
   // HTML editing commands
-  const commands = language === "html" ? [
+  const textFormattingCommands = language === "html" ? [
     { 
       icon: <Bold size={16} />, 
       tooltip: "Bold Text", 
@@ -87,6 +152,14 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       action: () => insertAtCursor('', true, '<u>', '</u>') 
     },
     { 
+      icon: <Type size={16} />, 
+      tooltip: "Span Element", 
+      action: () => insertAtCursor('', true, '<span>', '</span>') 
+    },
+  ] : [];
+
+  const headingCommands = language === "html" ? [
+    { 
       icon: <Heading1 size={16} />, 
       tooltip: "Heading 1", 
       action: () => insertAtCursor('', true, '<h1>', '</h1>') 
@@ -97,25 +170,18 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       action: () => insertAtCursor('', true, '<h2>', '</h2>') 
     },
     { 
-      icon: <Link size={16} />, 
-      tooltip: "Insert Link", 
-      action: () => insertAtCursor('', true, '<a href="#">', '</a>') 
+      icon: <Paragraph size={16} />, 
+      tooltip: "Paragraph", 
+      action: () => insertAtCursor('', true, '<p>', '</p>') 
     },
     { 
-      icon: <List size={16} />, 
-      tooltip: "Unordered List", 
-      action: () => insertAtCursor('<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>') 
+      icon: <Quote size={16} />, 
+      tooltip: "Blockquote", 
+      action: () => insertAtCursor('', true, '<blockquote>', '</blockquote>') 
     },
-    { 
-      icon: <ListOrdered size={16} />, 
-      tooltip: "Ordered List", 
-      action: () => insertAtCursor('<ol>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ol>') 
-    },
-    { 
-      icon: <Image size={16} />, 
-      tooltip: "Insert Image", 
-      action: () => insertAtCursor('<img src="" alt="" width="100%" />') 
-    },
+  ] : [];
+
+  const alignmentCommands = language === "html" ? [
     { 
       icon: <AlignLeft size={16} />, 
       tooltip: "Align Left", 
@@ -131,11 +197,93 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Align Right", 
       action: () => insertAtCursor('', true, '<div style="text-align: right;">', '</div>') 
     },
+  ] : [];
+
+  const listCommands = language === "html" ? [
+    { 
+      icon: <List size={16} />, 
+      tooltip: "Unordered List", 
+      action: () => insertAtCursor('<ul>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ul>') 
+    },
+    { 
+      icon: <ListOrdered size={16} />, 
+      tooltip: "Ordered List", 
+      action: () => insertAtCursor('<ol>\n  <li>Item 1</li>\n  <li>Item 2</li>\n</ol>') 
+    },
+    { 
+      icon: <CheckSquare size={16} />, 
+      tooltip: "Checkbox List", 
+      action: () => insertAtCursor('<ul class="checklist">\n  <li><input type="checkbox" id="item1"> <label for="item1">Item 1</label></li>\n  <li><input type="checkbox" id="item2"> <label for="item2">Item 2</label></li>\n</ul>') 
+    },
+  ] : [];
+
+  const insertCommands = language === "html" ? [
+    { 
+      icon: <Link size={16} />, 
+      tooltip: "Insert Link", 
+      action: () => setLinkDialogOpen(true)
+    },
+    { 
+      icon: <Image size={16} />, 
+      tooltip: "Insert Image", 
+      action: () => setImageDialogOpen(true)
+    },
+    { 
+      icon: <Table size={16} />, 
+      tooltip: "Insert Table", 
+      action: () => setTableDialogOpen(true)
+    },
+    { 
+      icon: <Minus size={16} />, 
+      tooltip: "Horizontal Rule", 
+      action: () => insertAtCursor('<hr />') 
+    },
+  ] : [];
+
+  const codeCommands = language === "html" ? [
     { 
       icon: <Code size={16} />, 
       tooltip: "Code Block", 
       action: () => insertAtCursor('', true, '<pre><code>', '</code></pre>') 
     },
+    { 
+      icon: <FileCode size={16} />, 
+      tooltip: "Inline Code", 
+      action: () => insertAtCursor('', true, '<code>', '</code>') 
+    },
+  ] : [];
+
+  const containerCommands = language === "html" ? [
+    { 
+      icon: <Square size={16} />, 
+      tooltip: "Div Container", 
+      action: () => insertAtCursor('', true, '<div>', '</div>') 
+    },
+    { 
+      icon: <Palette size={16} />, 
+      tooltip: "Styled Container", 
+      action: () => insertAtCursor('', true, '<div class="container" style="padding: 20px; border: 1px solid #ddd; border-radius: 4px;">', '</div>') 
+    },
+  ] : [];
+
+  const viewCommands = language === "html" ? [
+    { 
+      icon: <PanelRightOpen size={16} />, 
+      tooltip: viewMode === "code" ? "Preview" : "Edit Code", 
+      action: () => setViewMode(viewMode === "code" ? "preview" : "code")
+    },
+  ] : [];
+
+  // Combine all commands for easier rendering
+  const allCommandGroups = language === "html" ? [
+    { name: "Text", commands: textFormattingCommands },
+    { name: "Headings", commands: headingCommands },
+    { name: "Alignment", commands: alignmentCommands },
+    { name: "Lists", commands: listCommands },
+    { name: "Insert", commands: insertCommands },
+    { name: "Code", commands: codeCommands },
+    { name: "Containers", commands: containerCommands },
+    { name: "View", commands: viewCommands },
   ] : [];
   
   return (
@@ -146,43 +294,186 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
         </Label>
         
         {language === "html" && (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap gap-1">
             <TooltipProvider>
-              {commands.map((command, index) => (
-                <Tooltip key={index}>
-                  <TooltipTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={command.action}
-                      className="h-8 w-8 p-0"
-                    >
-                      {command.icon}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{command.tooltip}</p>
-                  </TooltipContent>
-                </Tooltip>
+              {allCommandGroups.map((group, groupIndex) => (
+                <div key={groupIndex} className="flex items-center">
+                  {groupIndex > 0 && <div className="mx-1 h-6 w-px bg-gray-300"></div>}
+                  {group.commands.map((command, index) => (
+                    <Tooltip key={index}>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={command.action}
+                          className="h-8 w-8 p-0"
+                        >
+                          {command.icon}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{command.tooltip}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
               ))}
             </TooltipProvider>
           </div>
         )}
       </div>
       
-      <div className="relative flex">
-        <div className="w-12 py-2 pr-2 text-right text-gray-500 bg-gray-50 select-none font-mono text-xs overflow-hidden text-overflow-clip whitespace-pre">
-          {getLineNumbers()}
+      {/* Link Dialog */}
+      <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Insert Link</DialogTitle>
+            <DialogDescription>Add a hyperlink to your content.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <UILabel htmlFor="link-text" className="text-right">
+                Link Text
+              </UILabel>
+              <Input
+                id="link-text"
+                value={linkText}
+                onChange={(e) => setLinkText(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <UILabel htmlFor="link-url" className="text-right">
+                URL
+              </UILabel>
+              <Input
+                id="link-url"
+                value={linkUrl}
+                onChange={(e) => setLinkUrl(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button variant="outline" onClick={() => setLinkDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleInsertLink}>
+              Insert Link
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Image Dialog */}
+      <Dialog open={imageDialogOpen} onOpenChange={setImageDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Insert Image</DialogTitle>
+            <DialogDescription>Add an image to your content.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <UILabel htmlFor="image-url" className="text-right">
+                Image URL
+              </UILabel>
+              <Input
+                id="image-url"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <UILabel htmlFor="image-alt" className="text-right">
+                Alt Text
+              </UILabel>
+              <Input
+                id="image-alt"
+                value={imageAlt}
+                onChange={(e) => setImageAlt(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button variant="outline" onClick={() => setImageDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleInsertImage}>
+              Insert Image
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Table Dialog */}
+      <Dialog open={tableDialogOpen} onOpenChange={setTableDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Insert Table</DialogTitle>
+            <DialogDescription>Add a table to your content.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <UILabel htmlFor="table-rows" className="text-right">
+                Rows
+              </UILabel>
+              <Input
+                id="table-rows"
+                type="number"
+                min="1"
+                max="10"
+                value={tableRows}
+                onChange={(e) => setTableRows(parseInt(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <UILabel htmlFor="table-cols" className="text-right">
+                Columns
+              </UILabel>
+              <Input
+                id="table-cols"
+                type="number"
+                min="1"
+                max="10"
+                value={tableCols}
+                onChange={(e) => setTableCols(parseInt(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter className="sm:justify-end">
+            <Button variant="outline" onClick={() => setTableDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleInsertTable}>
+              Insert Table
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {language === "html" && viewMode === "preview" ? (
+        <div className="p-4 bg-white overflow-auto min-h-[300px]">
+          <div dangerouslySetInnerHTML={{ __html: editorValue }} />
         </div>
-        
-        <textarea
-          ref={setTextAreaRef}
-          value={editorValue}
-          onChange={handleChange}
-          className="flex-1 p-2 font-mono text-sm resize-none focus:outline-none min-h-[300px] w-full border-none font-family-monospace"
-          spellCheck="false"
-        />
-      </div>
+      ) : (
+        <div className="relative flex">
+          <div className="w-12 py-2 pr-2 text-right text-gray-500 bg-gray-50 select-none font-mono text-xs overflow-hidden text-overflow-clip whitespace-pre">
+            {getLineNumbers()}
+          </div>
+          
+          <textarea
+            ref={setTextAreaRef}
+            value={editorValue}
+            onChange={handleChange}
+            className="flex-1 p-2 font-mono text-sm resize-none focus:outline-none min-h-[300px] w-full border-none font-family-monospace"
+            spellCheck="false"
+          />
+        </div>
+      )}
     </div>
   );
 };
