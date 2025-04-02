@@ -82,7 +82,7 @@ const MemberHeader = () => {
             >
               <Avatar className="h-10 w-10">
                 <AvatarImage 
-                  src="/lovable-uploads/0a3c5479-6eaf-42a3-a67e-9cc5f24a5216.png" 
+                  src="/lovable-uploads/5f2b6002-1195-4f70-aee9-c6de2dd470aa.png" 
                   alt="Profile" 
                 />
                 <AvatarFallback className="bg-primary/10 text-primary">

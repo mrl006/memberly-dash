@@ -100,7 +100,7 @@ const MemberLayout = () => {
                 style={{ cursor: "pointer" }}
               >
                 <img 
-                  src="/lovable-uploads/0a3c5479-6eaf-42a3-a67e-9cc5f24a5216.png" 
+                  src="/lovable-uploads/ababe9e5-16a4-4a61-a446-cc1d3009ce79.png" 
                   alt="Brand Logo" 
                   className="h-10 w-auto"
                 />

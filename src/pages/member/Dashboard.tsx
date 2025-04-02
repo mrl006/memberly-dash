@@ -50,22 +50,6 @@ const Dashboard = () => {
     },
   ];
 
-  // Latest announcements
-  const announcements = [
-    {
-      id: "1",
-      title: "New Course Available",
-      date: "3 days ago",
-      content: "Check out our new course on advanced membership strategies!"
-    },
-    {
-      id: "2",
-      title: "Upcoming Maintenance",
-      date: "1 week ago",
-      content: "The platform will be undergoing maintenance on May 20th from 2-4 AM EST."
-    }
-  ];
-
   // Stats cards data
   const statsCards = [
     {
@@ -119,44 +103,42 @@ const Dashboard = () => {
       </div>
       
       {/* Subscription Status */}
-      <Card className="overflow-hidden border-none shadow-sm">
-        <div className="bg-gradient-to-r from-primary/5 to-transparent px-6 pt-6">
-          <div className="flex justify-between items-start">
-            <div>
-              <CardTitle>Your Subscription</CardTitle>
-              <CardDescription>Current plan and billing information</CardDescription>
-            </div>
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-              {subscription.status === "active" ? "Active" : "Inactive"}
-            </Badge>
-          </div>
+      <div>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-xl font-bold">Your Subscription</h2>
+          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+            Active
+          </Badge>
         </div>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-medium text-lg">{subscription.name}</h3>
-              <p className="text-muted-foreground text-sm">
-                Next billing date: {subscription.nextBillingDate}
-              </p>
-            </div>
-            
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Current Period</span>
-                <span>{subscription.daysRemaining} days remaining</span>
+        
+        <Card className="overflow-hidden border-none shadow-sm">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-medium text-lg">{subscription.name}</h3>
+                <p className="text-muted-foreground text-sm">
+                  Next billing date: {subscription.nextBillingDate}
+                </p>
               </div>
-              <Progress value={100 - (subscription.daysRemaining / 30) * 100} className="h-2" />
+              
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>Current Period</span>
+                  <span>{subscription.daysRemaining} days remaining</span>
+                </div>
+                <Progress value={100 - (subscription.daysRemaining / 30) * 100} className="h-2" />
+              </div>
             </div>
-          </div>
-        </CardContent>
-        <CardFooter className="border-t bg-gray-50 py-3">
-          <Link to="/member/subscriptions">
-            <Button variant="outline" size="sm">
-              Manage Subscription
-            </Button>
-          </Link>
-        </CardFooter>
-      </Card>
+          </CardContent>
+          <CardFooter className="border-t bg-gray-50 py-3">
+            <Link to="/member/subscriptions">
+              <Button variant="outline" size="sm">
+                Manage Subscription
+              </Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
       
       {/* Products Grid */}
       <div>
@@ -232,41 +214,6 @@ const Dashboard = () => {
           ))}
         </div>
       </div>
-      
-      {/* Announcements */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Latest Announcements</h2>
-        <div className="space-y-4">
-          {announcements.map((announcement) => (
-            <Card key={announcement.id} className="border-none shadow-sm">
-              <CardHeader className="pb-2 bg-gray-50 border-b">
-                <div className="flex justify-between items-center">
-                  <CardTitle className="text-lg">{announcement.title}</CardTitle>
-                  <span className="text-sm text-muted-foreground">{announcement.date}</span>
-                </div>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <p>{announcement.content}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </div>
-      
-      {/* Quick Support */}
-      <Card className="bg-gradient-to-r from-primary/5 to-white border-none shadow-sm">
-        <CardHeader>
-          <CardTitle>Need Help?</CardTitle>
-          <CardDescription>Our support team is ready to assist you</CardDescription>
-        </CardHeader>
-        <CardFooter>
-          <Link to="/member/support">
-            <Button>
-              Contact Support
-            </Button>
-          </Link>
-        </CardFooter>
-      </Card>
     </div>
   );
 };
