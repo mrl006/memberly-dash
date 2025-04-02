@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { 
@@ -272,7 +273,7 @@ const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
     <div className="flex flex-col border rounded-md overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
         <Label className="text-sm font-medium text-blue-500">
-          HTML
+          HTML Editor
         </Label>
         
         <div className="flex flex-wrap gap-1">

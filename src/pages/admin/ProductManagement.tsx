@@ -138,7 +138,6 @@ const ProductManagement = () => {
   });
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [activeTab, setActiveTab] = useState("details");
-  const [codeEditorTab, setCodeEditorTab] = useState("html");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -531,38 +530,17 @@ const ProductManagement = () => {
               <TabsContent value="code" className="space-y-4 mt-4">
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-lg font-medium">Code Editor</h3>
-                    <Tabs value={codeEditorTab} onValueChange={setCodeEditorTab} className="w-auto">
-                      <TabsList>
-                        <TabsTrigger value="html">HTML</TabsTrigger>
-                        <TabsTrigger value="css">CSS</TabsTrigger>
-                        <TabsTrigger value="js">JavaScript</TabsTrigger>
-                      </TabsList>
-                    </Tabs>
+                    <h3 className="text-lg font-medium">HTML Code Editor</h3>
                   </div>
                   
                   <div className="border rounded-md">
-                    {codeEditorTab === "html" && (
-                      <CodeEditor 
-                        value={newProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
-                        onChange={(value) => handleCodeChange("html", value)}
-                      />
-                    )}
-                    {codeEditorTab === "css" && (
-                      <CodeEditor 
-                        value={newProduct.codeContent?.css || '/* Add your CSS styles here */'}
-                        onChange={(value) => handleCodeChange("css", value)}
-                      />
-                    )}
-                    {codeEditorTab === "js" && (
-                      <CodeEditor 
-                        value={newProduct.codeContent?.js || '// Add your JavaScript code here'}
-                        onChange={(value) => handleCodeChange("js", value)}
-                      />
-                    )}
+                    <CodeEditor 
+                      value={newProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
+                      onChange={(value) => handleCodeChange("html", value)}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Add custom HTML, CSS, and JavaScript for this product. This code can be embedded in content pages.
+                    Add custom HTML code for this product. This code can be embedded in content pages.
                   </p>
                 </div>
               </TabsContent>
@@ -790,38 +768,17 @@ const ProductManagement = () => {
                                   <TabsContent value="code" className="space-y-4 mt-4">
                                     <div className="space-y-4">
                                       <div className="flex justify-between items-center">
-                                        <h3 className="text-lg font-medium">Code Editor</h3>
-                                        <Tabs value={codeEditorTab} onValueChange={setCodeEditorTab} className="w-auto">
-                                          <TabsList>
-                                            <TabsTrigger value="html">HTML</TabsTrigger>
-                                            <TabsTrigger value="css">CSS</TabsTrigger>
-                                            <TabsTrigger value="js">JavaScript</TabsTrigger>
-                                          </TabsList>
-                                        </Tabs>
+                                        <h3 className="text-lg font-medium">HTML Code Editor</h3>
                                       </div>
                                       
                                       <div className="border rounded-md">
-                                        {codeEditorTab === "html" && (
-                                          <CodeEditor 
-                                            value={selectedProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
-                                            onChange={(value) => handleCodeChange("html", value)}
-                                          />
-                                        )}
-                                        {codeEditorTab === "css" && (
-                                          <CodeEditor 
-                                            value={selectedProduct.codeContent?.css || '/* Add your CSS styles here */'}
-                                            onChange={(value) => handleCodeChange("css", value)}
-                                          />
-                                        )}
-                                        {codeEditorTab === "js" && (
-                                          <CodeEditor 
-                                            value={selectedProduct.codeContent?.js || '// Add your JavaScript code here'}
-                                            onChange={(value) => handleCodeChange("js", value)}
-                                          />
-                                        )}
+                                        <CodeEditor 
+                                          value={selectedProduct.codeContent?.html || '<!-- Add your HTML content here -->'}
+                                          onChange={(value) => handleCodeChange("html", value)}
+                                        />
                                       </div>
                                       <p className="text-xs text-muted-foreground">
-                                        Edit custom HTML, CSS, and JavaScript for this product.
+                                        Edit custom HTML code for this product.
                                       </p>
                                     </div>
                                   </TabsContent>
