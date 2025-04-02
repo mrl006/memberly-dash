@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useToast } from "@/components/ui/use-toast";
-import { AlertCircle, Loader2, ShieldCheck, KeyRound } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { AlertCircle, Loader2, KeyRound, Mail, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { findUserByEmail } from "@/services/userService";
+import { motion } from "framer-motion";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,6 @@ const Login = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [loginType, setLoginType] = useState<"client" | "admin">("client");
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -50,33 +50,8 @@ const Login = () => {
     
     setIsLoading(true);
     
-    // In a real production app, this would have proper password hashing/verification
-    // For now we're just checking if the user exists in our system
     setTimeout(() => {
       setIsLoading(false);
-      
-      // Admin login logic - in production you should have proper admin authentication
-      if (loginType === "admin") {
-        const adminUser = findUserByEmail(email);
-        
-        if (adminUser) {
-          toast({
-            title: "Admin Login Successful",
-            description: "Welcome to the admin dashboard!",
-          });
-          
-          if (rememberMe) {
-            localStorage.setItem("memberly-user-email", email);
-            localStorage.setItem("memberly-user-type", "admin");
-          }
-          
-          navigate("/admin");
-          return;
-        }
-        
-        setErrorMessage("Invalid admin credentials. Please try again.");
-        return;
-      }
       
       // Regular member login logic
       const user = findUserByEmail(email);
@@ -103,39 +78,8 @@ const Login = () => {
   return (
     <div className="space-y-6">
       <div className="text-center">
-        <h2 className="text-2xl font-bold mb-2">Sign In</h2>
-        <p className="text-muted-foreground">Access your account</p>
-      </div>
-      
-      <div className="flex bg-muted rounded-md p-1 mb-6">
-        <button
-          type="button"
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            loginType === "client" 
-              ? "bg-background text-foreground shadow-sm" 
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          onClick={() => setLoginType("client")}
-        >
-          <span className="flex items-center justify-center gap-2">
-            <KeyRound className="h-4 w-4" />
-            Client Login
-          </span>
-        </button>
-        <button
-          type="button"
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            loginType === "admin" 
-              ? "bg-background text-foreground shadow-sm" 
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          onClick={() => setLoginType("admin")}
-        >
-          <span className="flex items-center justify-center gap-2">
-            <ShieldCheck className="h-4 w-4" />
-            Admin Login
-          </span>
-        </button>
+        <h2 className="text-2xl font-bold mb-2">Welcome Back</h2>
+        <p className="text-muted-foreground">Sign in to your account</p>
       </div>
       
       {errorMessage && (
@@ -146,70 +90,111 @@ const Login = () => {
       )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="your.email@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={isLoading}
-            autoComplete="email"
-          />
-        </div>
+        <motion.div 
+          className="space-y-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <Label htmlFor="email" className="text-gray-700">Email</Label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              id="email"
+              type="email"
+              placeholder="your.email@example.com"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
+              autoComplete="email"
+              className="pl-10"
+            />
+          </div>
+        </motion.div>
         
-        <div className="space-y-2">
+        <motion.div 
+          className="space-y-2"
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
           <div className="flex justify-between items-center">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-gray-700">Password</Label>
             <Link to="/forgot-password" className="text-sm text-primary hover:underline">
               Forgot password?
             </Link>
           </div>
-          <Input
-            id="password"
-            type="password"
-            placeholder="••••••••"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={isLoading}
-            autoComplete="current-password"
-          />
-        </div>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
+              autoComplete="current-password"
+              className="pl-10"
+            />
+          </div>
+        </motion.div>
         
-        <div className="flex items-center space-x-2">
+        <motion.div 
+          className="flex items-center space-x-2"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+        >
           <Checkbox 
             id="remember"
             checked={rememberMe}
             onCheckedChange={(checked) => setRememberMe(!!checked)}
             disabled={isLoading}
           />
-          <Label htmlFor="remember" className="text-sm font-normal cursor-pointer">
+          <Label htmlFor="remember" className="text-sm font-normal cursor-pointer text-gray-600">
             Remember me
           </Label>
-        </div>
+        </motion.div>
         
-        <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Signing in...
-            </>
-          ) : (
-            `Sign In as ${loginType === "admin" ? "Admin" : "Client"}`
-          )}
-        </Button>
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700" disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Signing in...
+              </>
+            ) : (
+              <>
+                <KeyRound className="mr-2 h-4 w-4" />
+                Sign In
+              </>
+            )}
+          </Button>
+        </motion.div>
       </form>
       
       <div className="mt-6 text-center text-sm">
-        <p>
+        <p className="text-gray-600">
           Don't have an account?{" "}
-          <Link to="/register" className="text-primary hover:underline">
+          <Link to="/auth/register" className="text-primary font-medium hover:underline">
             Create an account
           </Link>
         </p>
+      </div>
+      
+      <div className="pt-4 mt-6 border-t border-gray-200 text-center">
+        <Link 
+          to="/admin-login" 
+          className="text-xs text-gray-500 hover:text-gray-700"
+        >
+          Administrator Login
+        </Link>
       </div>
     </div>
   );

@@ -25,6 +25,7 @@ import AccessProducts from "./pages/member/AccessProducts";
 import Downloads from "./pages/member/Downloads";
 import Support from "./pages/member/Support";
 import Subscriptions from "./pages/member/Subscriptions";
+import AdminLogin from "./pages/admin/AdminLogin";
 
 function App() {
   const router = createBrowserRouter([
@@ -45,6 +46,10 @@ function App() {
           element: <Register />,
         },
       ],
+    },
+    {
+      path: "/admin-login",
+      element: <AdminLogin />,
     },
     {
       path: "/admin",
