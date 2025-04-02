@@ -41,14 +41,12 @@ const AccessProducts = () => {
     const type = product.type?.toLowerCase();
     
     // Use different colors based on product type
-    let bgColor = "bg-blue-500";
     let iconClass = "text-blue-500";
     
     if (type?.includes('course') || type?.includes('subscription')) {
-      bgColor = "bg-blue-500";
       iconClass = "text-blue-500";
       return (
-        <div className={`rounded-full ${iconClass} h-16 w-16 flex items-center justify-center`}>
+        <div className={`rounded-full ${iconClass} h-20 w-20 flex items-center justify-center bg-blue-50 mb-4`}>
           <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
             <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 8H7V7h10v4z"/>
           </svg>
@@ -58,7 +56,7 @@ const AccessProducts = () => {
     
     // Default icon for other types
     return (
-      <div className={`rounded-full ${iconClass} h-16 w-16 flex items-center justify-center`}>
+      <div className={`rounded-full ${iconClass} h-20 w-20 flex items-center justify-center bg-blue-50 mb-4`}>
         <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8 20V8h2v12H8zm6 0V8h2v12h-2z"/>
         </svg>
@@ -81,15 +79,28 @@ const AccessProducts = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Your Products</h1>
+        <p className="text-gray-500 mt-1">Access and manage all your purchased products here</p>
       </div>
       
       {products.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
-            <Card key={product.id} className="overflow-hidden p-6 flex flex-col items-center">
-              <div className="flex flex-col items-center justify-center py-6">
+            <Card key={product.id} className="overflow-hidden p-6 flex flex-col items-center text-center hover:shadow-md transition-shadow">
+              <div className="flex flex-col items-center justify-center py-6 w-full">
                 {getProductIcon(product)}
-                <h2 className="text-xl font-bold mt-4 text-center">{product.name}</h2>
+                <h2 className="text-xl font-bold mb-2">{product.name}</h2>
+                <p className="text-gray-500 text-sm mb-4">
+                  {product.type || "Digital Product"}
+                </p>
+                {product.purchaseInfo?.status && (
+                  <div className={`text-xs px-3 py-1 rounded-full mb-4 ${
+                    product.purchaseInfo.status === 'active' 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {product.purchaseInfo.status === 'active' ? 'Active' : 'Inactive'}
+                  </div>
+                )}
               </div>
               
               <Button 

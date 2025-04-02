@@ -64,7 +64,7 @@ const MemberLayout = () => {
         } fixed inset-y-0 lg:flex z-40`}
       >
         <div className="p-4 border-b border-gray-200">
-          <h1 className="text-2xl font-bold gradient-heading">Memberly</h1>
+          <h1 className="text-2xl font-bold text-primary">Memberly</h1>
           <p className="text-sm text-gray-600">Member Portal</p>
         </div>
         
@@ -73,7 +73,7 @@ const MemberLayout = () => {
             <NavLink 
               to="/member" 
               className={({isActive}) => 
-                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
                   isActive 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-gray-700 hover:bg-gray-100"
@@ -87,7 +87,7 @@ const MemberLayout = () => {
             <NavLink 
               to="/member/profile" 
               className={({isActive}) => 
-                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
                   isActive 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-gray-700 hover:bg-gray-100"
@@ -100,7 +100,7 @@ const MemberLayout = () => {
             <NavLink 
               to="/member/subscriptions" 
               className={({isActive}) => 
-                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
                   isActive 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-gray-700 hover:bg-gray-100"
@@ -113,7 +113,7 @@ const MemberLayout = () => {
             <NavLink 
               to="/member/access-products" 
               className={({isActive}) => 
-                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
                   isActive 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-gray-700 hover:bg-gray-100"
@@ -126,7 +126,7 @@ const MemberLayout = () => {
             <NavLink 
               to="/member/downloads" 
               className={({isActive}) => 
-                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
                   isActive 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-gray-700 hover:bg-gray-100"
@@ -139,7 +139,7 @@ const MemberLayout = () => {
             <NavLink 
               to="/member/support" 
               className={({isActive}) => 
-                `flex items-center space-x-2 px-4 py-3 rounded-md transition-colors ${
+                `flex items-center space-x-3 px-4 py-3 rounded-md transition-colors ${
                   isActive 
                     ? "bg-primary/10 text-primary font-medium" 
                     : "text-gray-700 hover:bg-gray-100"
@@ -154,7 +154,7 @@ const MemberLayout = () => {
           <div className="p-4 border-t border-gray-200 mt-auto">
             <button 
               onClick={handleLogout}
-              className="flex items-center space-x-2 text-gray-700 px-4 py-3 rounded-md 
+              className="flex items-center space-x-3 text-gray-700 px-4 py-3 rounded-md 
                          hover:bg-gray-100 transition-colors w-full"
             >
               <LogOut size={20} />
@@ -167,7 +167,7 @@ const MemberLayout = () => {
       {/* Main content */}
       <div className={`flex-1 ${showSidebar ? "lg:ml-64" : ""}`}>
         <MemberHeader />
-        <main className="p-6">
+        <main className="p-6 max-w-7xl mx-auto">
           <Outlet />
         </main>
       </div>
