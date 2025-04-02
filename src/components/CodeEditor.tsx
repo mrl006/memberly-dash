@@ -2,13 +2,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { 
-  Bold, Italic, Link, List, ListOrdered, Code, AlignLeft, AlignCenter, AlignRight, 
-  Image, Heading1, Heading2, Underline, Table, Square, FileCode, PanelRightOpen, 
-  Type, Quote, CheckSquare, Minus, Palette
+  Bold, Italic, Underline, Heading1, Heading2, AlignLeft, AlignCenter, AlignRight, 
+  Link, Image, List, ListOrdered, Code, Square, Minus, CheckSquare, Type, PanelRightOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { DialogTrigger, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label as UILabel } from "@/components/ui/label";
 
@@ -153,16 +152,6 @@ const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
       tooltip: "Heading 2", 
       action: () => insertAtCursor('', true, '<h2>', '</h2>') 
     },
-    { 
-      icon: <Type size={16} />, 
-      tooltip: "Paragraph", 
-      action: () => insertAtCursor('', true, '<p>', '</p>') 
-    },
-    { 
-      icon: <Quote size={16} />, 
-      tooltip: "Blockquote", 
-      action: () => insertAtCursor('', true, '<blockquote>', '</blockquote>') 
-    },
   ];
 
   const alignmentCommands = [
@@ -213,7 +202,7 @@ const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
       action: () => setImageDialogOpen(true)
     },
     { 
-      icon: <Table size={16} />, 
+      icon: <Square size={16} />, 
       tooltip: "Insert Table", 
       action: () => setTableDialogOpen(true)
     },
@@ -230,24 +219,6 @@ const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
       tooltip: "Code Block", 
       action: () => insertAtCursor('', true, '<pre><code>', '</code></pre>') 
     },
-    { 
-      icon: <FileCode size={16} />, 
-      tooltip: "Inline Code", 
-      action: () => insertAtCursor('', true, '<code>', '</code>') 
-    },
-  ];
-
-  const containerCommands = [
-    { 
-      icon: <Square size={16} />, 
-      tooltip: "Div Container", 
-      action: () => insertAtCursor('', true, '<div>', '</div>') 
-    },
-    { 
-      icon: <Palette size={16} />, 
-      tooltip: "Styled Container", 
-      action: () => insertAtCursor('', true, '<div class="container" style="padding: 20px; border: 1px solid #ddd; border-radius: 4px;">', '</div>') 
-    },
   ];
 
   const viewCommands = [
@@ -258,51 +229,207 @@ const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
     },
   ];
 
-  const allCommandGroups = [
-    { name: "Text", commands: textFormattingCommands },
-    { name: "Headings", commands: headingCommands },
-    { name: "Alignment", commands: alignmentCommands },
-    { name: "Lists", commands: listCommands },
-    { name: "Insert", commands: insertCommands },
-    { name: "Code", commands: codeCommands },
-    { name: "Containers", commands: containerCommands },
-    { name: "View", commands: viewCommands },
-  ];
+  const renderToolbar = () => (
+    <div className="flex flex-wrap gap-1 p-2 bg-gray-100 border-b border-gray-200">
+      <TooltipProvider>
+        {/* Row 1 */}
+        <div className="flex items-center w-full mb-1">
+          <div className="flex items-center space-x-1">
+            {textFormattingCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+          
+          <div className="mx-1 h-6 w-px bg-gray-300"></div>
+          
+          <div className="flex items-center space-x-1">
+            {headingCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => insertAtCursor('', true, '<p>', '</p>')}
+                  className="h-8 w-8 p-0 font-serif"
+                >
+                  ¶
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Paragraph</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => insertAtCursor('', true, '<blockquote>', '</blockquote>')} 
+                  className="h-8 w-8 p-0 font-serif"
+                >
+                  ""
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Blockquote</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          
+          <div className="mx-1 h-6 w-px bg-gray-300"></div>
+          
+          <div className="flex items-center space-x-1">
+            {alignmentCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+          
+          <div className="mx-1 h-6 w-px bg-gray-300"></div>
+          
+          <div className="flex items-center space-x-1">
+            {listCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2 */}
+        <div className="flex items-center w-full">
+          <div className="flex items-center space-x-1">
+            {insertCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+          
+          <div className="mx-1 h-6 w-px bg-gray-300"></div>
+          
+          <div className="flex items-center space-x-1">
+            {codeCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+          
+          <div className="mx-1 h-6 w-px bg-gray-300"></div>
+          
+          <div className="flex items-center space-x-1">
+            {viewCommands.map((command, index) => (
+              <Tooltip key={index}>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={command.action}
+                    className="h-8 w-8 p-0"
+                  >
+                    {command.icon}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{command.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            ))}
+          </div>
+        </div>
+      </TooltipProvider>
+    </div>
+  );
   
   return (
     <div className="flex flex-col border rounded-md overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
-        <Label className="text-sm font-medium text-blue-500">
-          HTML Editor
+      <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b">
+        <Label className="text-base font-medium text-blue-600">
+          HTML Code Editor
         </Label>
-        
-        <div className="flex flex-wrap gap-1">
-          <TooltipProvider>
-            {allCommandGroups.map((group, groupIndex) => (
-              <div key={groupIndex} className="flex items-center">
-                {groupIndex > 0 && <div className="mx-1 h-6 w-px bg-gray-300"></div>}
-                {group.commands.map((command, index) => (
-                  <Tooltip key={index}>
-                    <TooltipTrigger asChild>
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={command.action}
-                        className="h-8 w-8 p-0"
-                      >
-                        {command.icon}
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>{command.tooltip}</p>
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
-            ))}
-          </TooltipProvider>
-        </div>
       </div>
+      
+      {renderToolbar()}
       
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
         <DialogContent className="sm:max-w-md">
@@ -433,25 +560,27 @@ const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
         </DialogContent>
       </Dialog>
       
-      {viewMode === "preview" ? (
-        <div className="p-4 bg-white overflow-auto min-h-[300px]">
-          <div dangerouslySetInnerHTML={{ __html: editorValue }} />
-        </div>
-      ) : (
-        <div className="relative flex">
-          <div className="w-12 py-2 pr-2 text-right text-gray-500 bg-gray-50 select-none font-mono text-xs overflow-hidden text-overflow-clip whitespace-pre">
-            {getLineNumbers()}
+      <div className="overflow-hidden">
+        {viewMode === "preview" ? (
+          <div className="p-4 bg-white overflow-auto min-h-[300px]">
+            <div dangerouslySetInnerHTML={{ __html: editorValue }} />
           </div>
-          
-          <textarea
-            ref={setTextAreaRef}
-            value={editorValue}
-            onChange={handleChange}
-            className="flex-1 p-2 font-mono text-sm resize-none focus:outline-none min-h-[300px] w-full border-none font-family-monospace"
-            spellCheck="false"
-          />
-        </div>
-      )}
+        ) : (
+          <div className="relative flex">
+            <div className="w-12 py-2 pr-2 text-right text-gray-500 bg-gray-50 select-none font-mono text-xs overflow-hidden text-overflow-clip whitespace-pre">
+              {getLineNumbers()}
+            </div>
+            
+            <textarea
+              ref={setTextAreaRef}
+              value={editorValue}
+              onChange={handleChange}
+              className="flex-1 p-2 font-mono text-sm resize-none focus:outline-none min-h-[300px] w-full border-none font-family-monospace"
+              spellCheck="false"
+            />
+          </div>
+        )}
+      </div>
     </div>
   );
 };
