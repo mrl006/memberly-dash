@@ -1,5 +1,5 @@
 
-import { Bell } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,12 +11,13 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { Input } from "@/components/ui/input";
 
 const MemberHeader = () => {
   const navigate = useNavigate();
 
   return (
-    <header className="bg-white border-b border-gray-200 py-4 px-6 flex justify-between items-center sticky top-0 z-30 w-full">
+    <header className="bg-white border-b border-gray-200 py-3 px-6 flex justify-between items-center sticky top-0 z-30 w-full shadow-sm">
       {/* Logo Section */}
       <div 
         className="flex items-center cursor-pointer" 
@@ -26,15 +27,33 @@ const MemberHeader = () => {
         <span className="text-gray-600 text-sm hidden md:inline">Member Portal</span>
       </div>
       
+      {/* Search Bar - New addition */}
+      <div className="hidden md:flex relative max-w-xs mx-4 flex-1">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <Input
+          placeholder="Search resources..."
+          className="pl-9 bg-gray-50 border-gray-200 focus:bg-white"
+        />
+      </div>
+      
       <div className="flex items-center space-x-4">
+        <Button 
+          variant="outline" 
+          size="sm" 
+          onClick={() => navigate("/member/support")}
+          className="hidden sm:flex border-gray-200 hover:bg-gray-50 hover:text-primary"
+        >
+          Get Help
+        </Button>
+        
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-orange-500" />
+          <span className="absolute top-0 right-0 h-2.5 w-2.5 rounded-full bg-orange-500" />
         </Button>
         
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" className="relative rounded-full overflow-hidden h-10 w-10 p-0">
+            <Button variant="ghost" className="relative rounded-full overflow-hidden h-10 w-10 p-0 border border-gray-200">
               <Avatar className="h-10 w-10">
                 <AvatarImage 
                   src="/lovable-uploads/0a3c5479-6eaf-42a3-a67e-9cc5f24a5216.png" 
@@ -59,6 +78,10 @@ const MemberHeader = () => {
             <DropdownMenuItem onClick={() => navigate("/member/profile")}>
               My Profile
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => navigate("/member/subscriptions")}>
+              My Subscriptions
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => navigate("/login")}>
               Log out
             </DropdownMenuItem>
