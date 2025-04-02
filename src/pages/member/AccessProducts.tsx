@@ -4,31 +4,30 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getProductsCollection } from "@/services/dbService";
 import { useToast } from "@/hooks/use-toast";
-import { motion } from "framer-motion";
+import { purchaseProduct } from "@/services/purchaseService";
+import { ArrowRight } from "lucide-react";
 
 interface Product {
-  id: number;
+  id: string;
   name: string;
   type: string;
   status: string;
-  price: string;
+  price: number;
   description: string;
   bgColor?: string;
   textColor?: string;
 }
 
-// Default color mapping for new products without custom colors
+// Default color mapping for products
 const getDefaultColors = (index: number) => {
   const colors = [
-    { bg: "bg-gradient-to-br from-[#5030E5] to-[#00A550]", text: "text-white" },
-    { bg: "bg-[#FF6B35]", text: "text-white" },
-    { bg: "bg-[#15C39A]", text: "text-white" },
-    { bg: "bg-[#00C4CC]", text: "text-white" },
-    { bg: "bg-[#10A37F]", text: "text-white" },
-    { bg: "bg-[#F8F9FA]", text: "text-[#246EB9]" },
-    { bg: "bg-[#246EB9]", text: "text-white" },
-    { bg: "bg-[#F8F9FA]", text: "text-[#FF8C00]" },
-    { bg: "bg-[#0A1A2A]", text: "text-[#FA8E21]" },
+    { bg: "bg-blue-600", text: "text-white" },
+    { bg: "bg-orange-500", text: "text-white" },
+    { bg: "bg-emerald-600", text: "text-white" },
+    { bg: "bg-purple-600", text: "text-white" },
+    { bg: "bg-indigo-600", text: "text-white" },
+    { bg: "bg-pink-600", text: "text-white" },
+    { bg: "bg-teal-600", text: "text-white" },
   ];
   return colors[index % colors.length];
 };
@@ -36,7 +35,6 @@ const getDefaultColors = (index: number) => {
 const AccessProducts = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hoveredProduct, setHoveredProduct] = useState<number | null>(null);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -46,10 +44,57 @@ const AccessProducts = () => {
         const productsCollection = await getProductsCollection();
         
         if (productsCollection) {
-          const activeProducts = await productsCollection.find({ status: "Active" }).toArray();
+          // Adding default products if none exist
+          const checkProducts = await productsCollection.find({}).toArray();
+          
+          if (!checkProducts || checkProducts.length === 0) {
+            const defaultProducts = [
+              { 
+                id: "1", 
+                name: "Basic Membership", 
+                price: 9.99, 
+                type: "subscription", 
+                status: "active", 
+                sales: 120,
+                description: "Access to all basic features and content."
+              },
+              { 
+                id: "2", 
+                name: "Premium Membership", 
+                price: 19.99, 
+                type: "subscription", 
+                status: "active", 
+                sales: 85,
+                description: "Enhanced access with premium features and priority support."
+              },
+              { 
+                id: "3", 
+                name: "Enterprise Membership", 
+                price: 49.99, 
+                type: "subscription", 
+                status: "active", 
+                sales: 42,
+                description: "Full access to all features, dedicated support, and custom solutions."
+              },
+              { 
+                id: "4", 
+                name: "Resource Pack", 
+                price: 4.99, 
+                type: "digital", 
+                status: "active", 
+                sales: 67,
+                description: "Downloadable resources and templates to enhance your experience."
+              },
+            ];
+            
+            for (const product of defaultProducts) {
+              await productsCollection.insertOne(product);
+            }
+          }
+          
+          const activeProducts = await productsCollection.find({ status: "active" }).toArray();
           
           if (activeProducts && activeProducts.length > 0) {
-            // Add color information to products that don't have it
             const productsWithColors = activeProducts.map((product, index) => {
               if (!product.bgColor || !product.textColor) {
                 const colors = getDefaultColors(index);
@@ -76,7 +121,7 @@ const AccessProducts = () => {
         console.error("Error loading products:", error);
         toast({
           title: "Error",
-          description: "Failed to load your access products",
+          description: "Failed to load products",
           variant: "destructive"
         });
       } finally {
@@ -87,157 +132,81 @@ const AccessProducts = () => {
     loadProducts();
   }, [toast]);
   
-  const handleAccessProduct = (product: Product) => {
-    toast({
-      title: "Product Accessed",
-      description: `You've accessed ${product.name}`,
-      variant: "default"
-    });
-  };
-  
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
+  const handleAccessProduct = async (product: Product) => {
+    try {
+      // Using the userId "1" for demonstration
+      const purchased = await purchaseProduct("1", product.id);
+      
+      if (purchased) {
+        toast({
+          title: "Access Granted",
+          description: `You now have access to ${product.name}`,
+        });
       }
+    } catch (error) {
+      console.error("Error accessing product:", error);
+      toast({
+        title: "Access Error",
+        description: "There was an error gaining access to this product",
+        variant: "destructive"
+      });
     }
-  };
-  
-  const cardVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { type: "spring", stiffness: 300, damping: 20 }
-    },
-    hover: { 
-      scale: 1.05,
-      boxShadow: "0px 10px 20px rgba(0,0,0,0.2)",
-      transition: { type: "spring", stiffness: 400, damping: 10 }
-    }
-  };
-  
-  const buttonVariants = {
-    rest: { scale: 1 },
-    hover: { scale: 1.05 },
-    tap: { scale: 0.95 }
   };
   
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-96">
-        <motion.div 
-          className="text-center space-y-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="text-center space-y-4">
           <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full mx-auto"></div>
-          <p className="text-gray-500">Loading your products...</p>
-        </motion.div>
+          <p className="text-gray-500">Loading products...</p>
+        </div>
       </div>
     );
   }
   
   return (
     <div className="space-y-6">
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
+      <div>
         <h1 className="text-3xl font-bold tracking-tight">Access Products</h1>
         <p className="text-gray-500 mt-1">Click on any product to access it</p>
-      </motion.div>
+      </div>
       
       {products.length === 0 ? (
-        <motion.div 
-          className="text-center py-12 bg-gray-50 rounded-lg"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-        >
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
           <p className="text-gray-500">No products available. Please check back later.</p>
-        </motion.div>
+        </div>
       ) : (
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {products.map((product, index) => (
-            <motion.div
+            <Card 
               key={product.id}
-              variants={cardVariants}
-              whileHover="hover"
-              onHoverStart={() => setHoveredProduct(product.id)}
-              onHoverEnd={() => setHoveredProduct(null)}
+              className={`overflow-hidden shadow-md cursor-pointer ${product.bgColor || getDefaultColors(index).bg} border-0`}
+              onClick={() => handleAccessProduct(product)}
             >
-              <Card 
-                className={`h-full w-full overflow-hidden transition-all cursor-pointer flex flex-col ${product.bgColor} shadow-lg border-0`}
-                onClick={() => handleAccessProduct(product)}
-              >
-                <div className="flex flex-col items-center justify-center p-6 flex-grow text-center">
-                  <motion.div
-                    className="flex flex-col items-center justify-center h-full w-full"
-                    animate={{
-                      y: hoveredProduct === product.id ? -5 : 0,
-                      scale: hoveredProduct === product.id ? 1.03 : 1
-                    }}
-                    transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  >
-                    <h2 className={`text-xl md:text-2xl font-bold mb-4 ${product.textColor}`}>
-                      {product.name}
-                    </h2>
-                    <p className={`text-sm ${product.textColor} opacity-90 mb-3 line-clamp-3`}>
-                      {product.description}
-                    </p>
-                  </motion.div>
-                </div>
-                
-                <div className="p-4 bg-black/20 backdrop-blur-sm mt-auto">
-                  <motion.div
-                    variants={buttonVariants}
-                    whileHover="hover"
-                    whileTap="tap"
-                    className="w-full"
-                  >
-                    <Button 
-                      variant="secondary" 
-                      className={`${product.textColor} font-medium w-full text-center py-2 h-12 relative group`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleAccessProduct(product);
-                      }}
-                    >
-                      <span className="relative inline-flex items-center justify-center gap-2 px-2">
-                        Access Now
-                        <motion.span 
-                          animate={{ 
-                            x: hoveredProduct === product.id ? 5 : 0,
-                            opacity: hoveredProduct === product.id ? 1 : 0.7
-                          }}
-                          transition={{ 
-                            type: "spring", 
-                            stiffness: 400, 
-                            damping: 10 
-                          }}
-                          className="inline-block"
-                        >
-                          →
-                        </motion.span>
-                      </span>
-                    </Button>
-                  </motion.div>
-                </div>
-              </Card>
-            </motion.div>
+              <div className="p-6 flex flex-col h-40">
+                <h2 className={`text-xl font-bold mb-2 ${product.textColor || "text-white"}`}>
+                  {product.name}
+                </h2>
+                <p className={`text-sm opacity-90 mb-4 ${product.textColor || "text-white"}`}>
+                  {product.description || "Access this product now"}
+                </p>
+              </div>
+              
+              <div className="p-4 bg-black/10">
+                <Button 
+                  variant="secondary" 
+                  className={`w-full ${product.textColor || "text-white"} font-medium`}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAccessProduct(product);
+                  }}
+                >
+                  Access Now <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+            </Card>
           ))}
-        </motion.div>
+        </div>
       )}
     </div>
   );
