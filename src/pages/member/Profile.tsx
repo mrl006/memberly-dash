@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
+import { AlertCircle, Check, Info, Loader2, QrCode, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Profile = () => {
   const { toast } = useToast();
@@ -28,6 +31,11 @@ const Profile = () => {
     newPassword: "",
     confirmPassword: "",
   });
+  
+  // 2FA state
+  const [is2FAEnabled, setIs2FAEnabled] = useState(false);
+  const [is2FASetupOpen, setIs2FASetupOpen] = useState(false);
+  const [verificationCode, setVerificationCode] = useState("");
   
   // Handle profile form submission
   const handleProfileSubmit = (e: React.FormEvent) => {
@@ -73,6 +81,72 @@ const Profile = () => {
       });
     }, 1000);
   };
+
+  // Handle 2FA toggle
+  const handle2FAToggle = () => {
+    if (is2FAEnabled) {
+      // Disable 2FA - would typically require confirmation
+      confirmDisable2FA();
+    } else {
+      // Enable 2FA - show setup screen
+      setIs2FASetupOpen(true);
+    }
+  };
+
+  // Confirm disabling 2FA
+  const confirmDisable2FA = () => {
+    setIsSubmitting(true);
+    
+    // Simulate API call to disable 2FA
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIs2FAEnabled(false);
+      toast({
+        title: "2FA Disabled",
+        description: "Two-factor authentication has been disabled for your account.",
+      });
+    }, 1000);
+  };
+
+  // Complete 2FA setup
+  const complete2FASetup = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!verificationCode) {
+      toast({
+        title: "Verification Code Required",
+        description: "Please enter the verification code from your authenticator app.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    // Simulate API call to verify and enable 2FA
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIs2FAEnabled(true);
+      setIs2FASetupOpen(false);
+      setVerificationCode("");
+      toast({
+        title: "2FA Enabled",
+        description: "Two-factor authentication has been enabled for your account.",
+      });
+    }, 1000);
+  };
+
+  // Generate mock backup codes (in real app these would come from the backend)
+  const generateBackupCodes = () => {
+    const codes = [];
+    for (let i = 0; i < 8; i++) {
+      codes.push(`${Math.random().toString(36).substring(2, 7)}-${Math.random().toString(36).substring(2, 7)}`);
+    }
+    return codes;
+  };
+
+  // Mock backup codes
+  const backupCodes = generateBackupCodes();
 
   return (
     <div className="space-y-6">
@@ -253,16 +327,129 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Two-factor authentication adds an additional layer of security to your
-                    account by requiring more than just a password to sign in.
-                  </p>
+                  {is2FASetupOpen ? (
+                    <div className="space-y-4">
+                      <Alert className="bg-amber-50 border-amber-200">
+                        <Info className="h-4 w-4 text-amber-600" />
+                        <AlertDescription className="text-amber-800">
+                          Scan the QR code with an authenticator app like Google Authenticator, Authy, or Microsoft Authenticator.
+                        </AlertDescription>
+                      </Alert>
+                      
+                      <div className="flex flex-col items-center justify-center p-4 border rounded-md bg-gray-50">
+                        <div className="mb-4 p-2 bg-white border rounded">
+                          <QrCode className="h-32 w-32" />
+                        </div>
+                        <p className="text-sm text-center text-muted-foreground mb-4">
+                          Can't scan? Use this code: <span className="font-mono font-bold">HDJA 7D92 LM31 PQVS</span>
+                        </p>
+                      </div>
+                      
+                      <form onSubmit={complete2FASetup} className="space-y-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="verificationCode">Verification Code</Label>
+                          <Input
+                            id="verificationCode"
+                            placeholder="Enter 6-digit code"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value)}
+                            maxLength={6}
+                          />
+                        </div>
+                        
+                        <div className="space-y-4">
+                          <h4 className="font-medium">Backup Codes</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Save these backup codes in a secure place. Each code can only be used once.
+                          </p>
+                          <div className="grid grid-cols-2 gap-2 p-3 bg-gray-50 rounded-md border font-mono text-sm">
+                            {backupCodes.map((code, index) => (
+                              <div key={index} className="p-1">{code}</div>
+                            ))}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            onClick={() => {
+                              navigator.clipboard.writeText(backupCodes.join("\n"));
+                              toast({
+                                title: "Copied to Clipboard",
+                                description: "Backup codes have been copied to your clipboard."
+                              });
+                            }}
+                          >
+                            Copy All Codes
+                          </Button>
+                        </div>
+                        
+                        <div className="flex justify-between pt-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIs2FASetupOpen(false)}
+                          >
+                            Cancel
+                          </Button>
+                          <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                            {isSubmitting ? "Enabling..." : "Enable 2FA"}
+                          </Button>
+                        </div>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Two-factor authentication adds an additional layer of security to your
+                        account by requiring more than just a password to sign in.
+                      </p>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          {is2FAEnabled ? (
+                            <ShieldCheck className="h-5 w-5 text-green-500" />
+                          ) : (
+                            <Shield className="h-5 w-5 text-gray-400" />
+                          )}
+                          <Label htmlFor="2fa" className="flex-1">
+                            {is2FAEnabled ? "2FA is currently enabled" : "Enable two-factor authentication"}
+                          </Label>
+                        </div>
+                        <Switch
+                          id="2fa"
+                          checked={is2FAEnabled}
+                          onCheckedChange={handle2FAToggle}
+                        />
+                      </div>
+                      
+                      {is2FAEnabled && (
+                        <Alert className="mt-4 bg-green-50 border-green-200">
+                          <Check className="h-4 w-4 text-green-600" />
+                          <AlertDescription className="text-green-800">
+                            Your account is protected with two-factor authentication.
+                          </AlertDescription>
+                        </Alert>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
-                <CardFooter>
-                  <Button variant="outline">
-                    Enable 2FA
-                  </Button>
-                </CardFooter>
+                {!is2FASetupOpen && is2FAEnabled && (
+                  <CardFooter>
+                    <Button 
+                      variant="outline" 
+                      onClick={() => {
+                        toast({
+                          title: "Backup Codes",
+                          description: "New backup codes have been generated and can be viewed in your settings."
+                        });
+                      }}
+                    >
+                      Generate New Backup Codes
+                    </Button>
+                  </CardFooter>
+                )}
               </Card>
             </TabsContent>
           </Tabs>
