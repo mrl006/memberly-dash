@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+
+import { useState, useEffect, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { 
   Bold, Italic, Link, List, ListOrdered, Code, AlignLeft, AlignCenter, AlignRight, 
@@ -7,18 +8,16 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DialogTrigger, Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label as UILabel } from "@/components/ui/label";
 
 interface CodeEditorProps {
-  language: "html" | "css" | "javascript";
   value: string;
   onChange: (value: string) => void;
 }
 
-const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
+const CodeEditor = ({ value, onChange }: CodeEditorProps) => {
   const [editorValue, setEditorValue] = useState(value);
   const [textAreaRef, setTextAreaRef] = useState<HTMLTextAreaElement | null>(null);
   const [viewMode, setViewMode] = useState<"code" | "preview">("code");
@@ -45,19 +44,6 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
   const getLineNumbers = () => {
     const lines = editorValue.split('\n');
     return Array.from({ length: Math.max(lines.length, 10) }, (_, i) => i + 1).join('\n');
-  };
-  
-  const getSyntaxHighlightClass = () => {
-    switch (language) {
-      case "html":
-        return "text-blue-500";
-      case "css":
-        return "text-purple-500";
-      case "javascript":
-        return "text-amber-500";
-      default:
-        return "";
-    }
   };
 
   const insertAtCursor = (textToInsert: string, wrapSelection: boolean = false, prefix = '', suffix = '') => {
@@ -133,7 +119,7 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
     setTableCols(3);
   };
 
-  const textFormattingCommands = language === "html" ? [
+  const textFormattingCommands = [
     { 
       icon: <Bold size={16} />, 
       tooltip: "Bold Text", 
@@ -154,9 +140,9 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Span Element", 
       action: () => insertAtCursor('', true, '<span>', '</span>') 
     },
-  ] : [];
+  ];
 
-  const headingCommands = language === "html" ? [
+  const headingCommands = [
     { 
       icon: <Heading1 size={16} />, 
       tooltip: "Heading 1", 
@@ -177,9 +163,9 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Blockquote", 
       action: () => insertAtCursor('', true, '<blockquote>', '</blockquote>') 
     },
-  ] : [];
+  ];
 
-  const alignmentCommands = language === "html" ? [
+  const alignmentCommands = [
     { 
       icon: <AlignLeft size={16} />, 
       tooltip: "Align Left", 
@@ -195,9 +181,9 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Align Right", 
       action: () => insertAtCursor('', true, '<div style="text-align: right;">', '</div>') 
     },
-  ] : [];
+  ];
 
-  const listCommands = language === "html" ? [
+  const listCommands = [
     { 
       icon: <List size={16} />, 
       tooltip: "Unordered List", 
@@ -213,9 +199,9 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Checkbox List", 
       action: () => insertAtCursor('<ul class="checklist">\n  <li><input type="checkbox" id="item1"> <label for="item1">Item 1</label></li>\n  <li><input type="checkbox" id="item2"> <label for="item2">Item 2</label></li>\n</ul>') 
     },
-  ] : [];
+  ];
 
-  const insertCommands = language === "html" ? [
+  const insertCommands = [
     { 
       icon: <Link size={16} />, 
       tooltip: "Insert Link", 
@@ -236,9 +222,9 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Horizontal Rule", 
       action: () => insertAtCursor('<hr />') 
     },
-  ] : [];
+  ];
 
-  const codeCommands = language === "html" ? [
+  const codeCommands = [
     { 
       icon: <Code size={16} />, 
       tooltip: "Code Block", 
@@ -249,9 +235,9 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Inline Code", 
       action: () => insertAtCursor('', true, '<code>', '</code>') 
     },
-  ] : [];
+  ];
 
-  const containerCommands = language === "html" ? [
+  const containerCommands = [
     { 
       icon: <Square size={16} />, 
       tooltip: "Div Container", 
@@ -262,17 +248,17 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
       tooltip: "Styled Container", 
       action: () => insertAtCursor('', true, '<div class="container" style="padding: 20px; border: 1px solid #ddd; border-radius: 4px;">', '</div>') 
     },
-  ] : [];
+  ];
 
-  const viewCommands = language === "html" ? [
+  const viewCommands = [
     { 
       icon: <PanelRightOpen size={16} />, 
       tooltip: viewMode === "code" ? "Preview" : "Edit Code", 
       action: () => setViewMode(viewMode === "code" ? "preview" : "code")
     },
-  ] : [];
+  ];
 
-  const allCommandGroups = language === "html" ? [
+  const allCommandGroups = [
     { name: "Text", commands: textFormattingCommands },
     { name: "Headings", commands: headingCommands },
     { name: "Alignment", commands: alignmentCommands },
@@ -281,43 +267,41 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
     { name: "Code", commands: codeCommands },
     { name: "Containers", commands: containerCommands },
     { name: "View", commands: viewCommands },
-  ] : [];
+  ];
   
   return (
     <div className="flex flex-col border rounded-md overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-gray-100 border-b">
-        <Label className={`text-sm font-medium ${getSyntaxHighlightClass()}`}>
-          {language.toUpperCase()}
+        <Label className="text-sm font-medium text-blue-500">
+          HTML
         </Label>
         
-        {language === "html" && (
-          <div className="flex flex-wrap gap-1">
-            <TooltipProvider>
-              {allCommandGroups.map((group, groupIndex) => (
-                <div key={groupIndex} className="flex items-center">
-                  {groupIndex > 0 && <div className="mx-1 h-6 w-px bg-gray-300"></div>}
-                  {group.commands.map((command, index) => (
-                    <Tooltip key={index}>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          onClick={command.action}
-                          className="h-8 w-8 p-0"
-                        >
-                          {command.icon}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{command.tooltip}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
-                </div>
-              ))}
-            </TooltipProvider>
-          </div>
-        )}
+        <div className="flex flex-wrap gap-1">
+          <TooltipProvider>
+            {allCommandGroups.map((group, groupIndex) => (
+              <div key={groupIndex} className="flex items-center">
+                {groupIndex > 0 && <div className="mx-1 h-6 w-px bg-gray-300"></div>}
+                {group.commands.map((command, index) => (
+                  <Tooltip key={index}>
+                    <TooltipTrigger asChild>
+                      <Button 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={command.action}
+                        className="h-8 w-8 p-0"
+                      >
+                        {command.icon}
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>{command.tooltip}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+              </div>
+            ))}
+          </TooltipProvider>
+        </div>
       </div>
       
       <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
@@ -449,7 +433,7 @@ const CodeEditor = ({ language, value, onChange }: CodeEditorProps) => {
         </DialogContent>
       </Dialog>
       
-      {language === "html" && viewMode === "preview" ? (
+      {viewMode === "preview" ? (
         <div className="p-4 bg-white overflow-auto min-h-[300px]">
           <div dangerouslySetInnerHTML={{ __html: editorValue }} />
         </div>
