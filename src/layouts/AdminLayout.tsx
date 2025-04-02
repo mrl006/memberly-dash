@@ -56,7 +56,7 @@ const AdminLayout = () => {
       <aside 
         className={`bg-blue-500 w-64 flex-shrink-0 ${
           showSidebar ? "flex" : "hidden"
-        } fixed inset-y-0 lg:flex z-40 flex-col`}
+        } fixed inset-y-0 left-0 lg:flex z-40 flex-col`}
       >
         <div className="p-6 text-white text-center">
           <h1 className="text-3xl font-bold">Memberly</h1>

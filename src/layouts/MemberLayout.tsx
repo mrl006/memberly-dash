@@ -61,7 +61,7 @@ const MemberLayout = () => {
       <aside 
         className={`bg-white w-64 border-r border-gray-200 flex-shrink-0 flex-col ${
           showSidebar ? "flex" : "hidden"
-        } fixed inset-y-0 lg:flex z-40`}
+        } fixed inset-y-0 left-0 lg:flex z-40`}
       >
         <div className="p-4 border-b border-gray-200">
           <h1 className="text-2xl font-bold text-primary">Memberly</h1>
