@@ -22,6 +22,7 @@ import MemberDashboard from "./pages/member/Dashboard";
 import Profile from "./pages/member/Profile";
 import DashboardSettings from "./pages/admin/DashboardSettings";
 import ApiKeyManagement from "./pages/admin/ApiKeyManagement";
+import AccessProducts from "./pages/member/AccessProducts";
 
 function App() {
   const router = createBrowserRouter([
@@ -92,6 +93,10 @@ function App() {
         {
           path: "profile",
           element: <Profile />,
+        },
+        {
+          path: "access-products",
+          element: <AccessProducts />,
         },
       ],
     },
