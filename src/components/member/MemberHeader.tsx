@@ -24,26 +24,9 @@ const MemberHeader = () => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Logo Section - Animated and enhanced */}
-      <motion.div 
-        className="flex items-center cursor-pointer" 
-        onClick={() => navigate("/member")}
-        whileHover={{ scale: 1.05 }}
-        transition={{ type: "spring", stiffness: 400, damping: 10 }}
-      >
-        <motion.div 
-          className="bg-gradient-to-r from-primary/80 to-primary text-white font-bold text-2xl px-4 py-2 rounded-md shadow-md"
-          whileHover={{ 
-            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.2)",
-          }}
-        >
-          Memberly
-        </motion.div>
-      </motion.div>
-      
       {/* Search Bar - Enhanced with animation */}
       <motion.div 
-        className="hidden md:flex relative max-w-xs mx-4 flex-1"
+        className="flex md:flex-1 relative max-w-xs w-full"
         initial={{ opacity: 0, width: "90%" }}
         animate={{ opacity: 1, width: "100%" }}
         transition={{ delay: 0.2, duration: 0.5 }}

@@ -96,8 +96,10 @@ const MemberLayout = () => {
               <motion.div
                 className="text-2xl font-bold text-primary bg-gradient-to-r from-primary/10 to-primary/5 px-3 py-2 rounded-md"
                 whileHover={{ scale: 1.05 }}
+                onClick={() => navigate("/member")}
+                style={{ cursor: "pointer" }}
               >
-                Memberly
+                {/* Memberly text removed here */}
               </motion.div>
             </div>
             
