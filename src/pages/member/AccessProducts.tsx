@@ -2,34 +2,74 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ExternalLink } from "lucide-react";
-import { getUserPurchasedProductsWithDetails } from "@/services/purchaseService";
+import { getProductsCollection } from "@/services/dbService";
 import { useToast } from "@/hooks/use-toast";
 
-// Define product data with colors matching the image
-const productData = [
-  { id: "1", name: "Semrush", bgColor: "bg-gradient-to-br from-[#5030E5] to-[#00A550]", textColor: "text-white", path: "semrush" },
-  { id: "2", name: "Ubersuggest", bgColor: "bg-[#FF6B35]", textColor: "text-white", path: "ubersuggest" },
-  { id: "3", name: "Grammarly", bgColor: "bg-[#15C39A]", textColor: "text-white", path: "grammarly" },
-  { id: "4", name: "Canva", bgColor: "bg-[#00C4CC]", textColor: "text-white", path: "canva" },
-  { id: "5", name: "ChatGPT Plus", bgColor: "bg-[#10A37F]", textColor: "text-white", path: "chat-gpt" },
-  { id: "6", name: "SEOptimer", bgColor: "bg-[#F8F9FA]", textColor: "text-[#246EB9]", path: "seoptimer" },
-  { id: "7", name: "Seobility", bgColor: "bg-[#246EB9]", textColor: "text-white", path: "seobility" },
-  { id: "8", name: "SEO Site Checkup", bgColor: "bg-[#F8F9FA]", textColor: "text-[#FF8C00]", path: "seo-site-checkup" },
-  { id: "9", name: "Ahrefs", bgColor: "bg-[#0A1A2A]", textColor: "text-[#FA8E21]", path: "ahrefs" },
-];
+interface Product {
+  id: number;
+  name: string;
+  type: string;
+  status: string;
+  price: string;
+  description: string;
+  bgColor?: string;
+  textColor?: string;
+}
+
+// Default color mapping for new products without custom colors
+const getDefaultColors = (index: number) => {
+  const colors = [
+    { bg: "bg-gradient-to-br from-[#5030E5] to-[#00A550]", text: "text-white" },
+    { bg: "bg-[#FF6B35]", text: "text-white" },
+    { bg: "bg-[#15C39A]", text: "text-white" },
+    { bg: "bg-[#00C4CC]", text: "text-white" },
+    { bg: "bg-[#10A37F]", text: "text-white" },
+    { bg: "bg-[#F8F9FA]", text: "text-[#246EB9]" },
+    { bg: "bg-[#246EB9]", text: "text-white" },
+    { bg: "bg-[#F8F9FA]", text: "text-[#FF8C00]" },
+    { bg: "bg-[#0A1A2A]", text: "text-[#FA8E21]" },
+  ];
+  return colors[index % colors.length];
+};
 
 const AccessProducts = () => {
-  const [products, setProducts] = useState(productData);
+  const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
   useEffect(() => {
-    const loadPurchasedProducts = async () => {
+    const loadProducts = async () => {
       try {
         setIsLoading(true);
-        // Mock functionality - in a real app this would filter/modify the products based on user's purchases
-        setProducts(productData);
+        const productsCollection = await getProductsCollection();
+        
+        if (productsCollection) {
+          const activeProducts = await productsCollection.find({ status: "Active" }).toArray();
+          
+          if (activeProducts && activeProducts.length > 0) {
+            // Add color information to products that don't have it
+            const productsWithColors = activeProducts.map((product, index) => {
+              if (!product.bgColor || !product.textColor) {
+                const colors = getDefaultColors(index);
+                return {
+                  ...product,
+                  bgColor: product.bgColor || colors.bg,
+                  textColor: product.textColor || colors.text
+                };
+              }
+              return product;
+            });
+            
+            setProducts(productsWithColors);
+          } else {
+            setProducts([]);
+            toast({
+              title: "No Active Products",
+              description: "There are no active products available",
+              variant: "default"
+            });
+          }
+        }
       } catch (error) {
         console.error("Error loading products:", error);
         toast({
@@ -42,8 +82,16 @@ const AccessProducts = () => {
       }
     };
     
-    loadPurchasedProducts();
+    loadProducts();
   }, [toast]);
+  
+  const handleAccessProduct = (product: Product) => {
+    toast({
+      title: "Product Accessed",
+      description: `You've accessed ${product.name}`,
+      variant: "default"
+    });
+  };
   
   if (isLoading) {
     return (
@@ -63,28 +111,37 @@ const AccessProducts = () => {
         <p className="text-gray-500 mt-1">Click on any product to access it</p>
       </div>
       
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {products.map((product) => (
-          <Card 
-            key={product.id} 
-            className={`overflow-hidden hover:shadow-lg transition-shadow cursor-pointer flex flex-col ${product.bgColor}`}
-          >
-            <div className="flex flex-col items-center justify-center p-6 h-32">
-              <h2 className={`text-xl font-bold ${product.textColor}`}>{product.name}</h2>
-            </div>
-            <div className="bg-green-500 p-2 text-center text-white">
-              <Button 
-                variant="link" 
-                className="text-white p-0 h-auto font-medium flex items-center justify-center w-full"
-                onClick={() => window.open(`https://${product.path}.com`, '_blank')}
-              >
-                {product.name}
-                <ExternalLink className="ml-1 h-3 w-3" />
-              </Button>
-            </div>
-          </Card>
-        ))}
-      </div>
+      {products.length === 0 ? (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          <p className="text-gray-500">No products available. Please check back later.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          {products.map((product) => (
+            <Card 
+              key={product.id} 
+              className={`overflow-hidden hover:shadow-lg transition-shadow cursor-pointer flex flex-col ${product.bgColor}`}
+              onClick={() => handleAccessProduct(product)}
+            >
+              <div className="flex flex-col items-center justify-center p-6 h-32">
+                <h2 className={`text-xl font-bold ${product.textColor}`}>{product.name}</h2>
+              </div>
+              <div className="bg-green-500 p-2 text-center text-white">
+                <Button 
+                  variant="link" 
+                  className="text-white p-0 h-auto font-medium flex items-center justify-center w-full"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAccessProduct(product);
+                  }}
+                >
+                  Access {product.name}
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
