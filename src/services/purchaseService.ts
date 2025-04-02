@@ -85,7 +85,7 @@ export const purchaseProduct = async (userId: string, productId: string): Promis
       toast({
         title: "Already Purchased",
         description: "You've already purchased this product.",
-        variant: "warning"
+        variant: "default"
       });
       return false;
     }
