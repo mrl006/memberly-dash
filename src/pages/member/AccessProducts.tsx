@@ -2,8 +2,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Unlock, Lock, FileText, Download, PlayCircle, Video, Image } from "lucide-react";
+import { Unlock } from "lucide-react";
 import { getUserPurchasedProductsWithDetails } from "@/services/purchaseService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -37,16 +36,34 @@ const AccessProducts = () => {
     loadPurchasedProducts();
   }, [toast]);
   
-  // Helper function to determine the icon based on product type
+  // Simplified product icon with custom styling based on type
   const getProductIcon = (product: any) => {
     const type = product.type?.toLowerCase();
-    if (type?.includes('course')) return <Video className="h-16 w-16 text-primary" />;
-    if (type?.includes('ebook') || type?.includes('pdf')) return <FileText className="h-16 w-16 text-primary" />;
-    if (type?.includes('image') || type?.includes('photo')) return <Image className="h-16 w-16 text-primary" />;
-    if (type?.includes('video')) return <PlayCircle className="h-16 w-16 text-primary" />;
-    if (type?.includes('download') || type?.includes('digital')) return <Download className="h-16 w-16 text-primary" />;
-    // Default icon
-    return <FileText className="h-16 w-16 text-primary" />;
+    
+    // Use different colors based on product type
+    let bgColor = "bg-blue-500";
+    let iconClass = "text-blue-500";
+    
+    if (type?.includes('course') || type?.includes('subscription')) {
+      bgColor = "bg-blue-500";
+      iconClass = "text-blue-500";
+      return (
+        <div className={`rounded-full ${iconClass} h-16 w-16 flex items-center justify-center`}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 8H7V7h10v4z"/>
+          </svg>
+        </div>
+      );
+    }
+    
+    // Default icon for other types
+    return (
+      <div className={`rounded-full ${iconClass} h-16 w-16 flex items-center justify-center`}>
+        <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 2l5 5h-5V4zM8 20V8h2v12H8zm6 0V8h2v12h-2z"/>
+        </svg>
+      </div>
+    );
   };
   
   if (isLoading) {
@@ -70,17 +87,6 @@ const AccessProducts = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {products.map((product) => (
             <Card key={product.id} className="overflow-hidden p-6 flex flex-col items-center">
-              <div className="absolute top-3 left-3">
-                <Badge 
-                  variant="outline" 
-                  className={`${product.purchaseInfo?.status === "active" 
-                    ? "bg-green-50 text-green-700 border-green-200" 
-                    : "bg-amber-50 text-amber-700 border-amber-200"}`}
-                >
-                  {product.purchaseInfo?.status === "active" ? "Active" : "Inactive"}
-                </Badge>
-              </div>
-              
               <div className="flex flex-col items-center justify-center py-6">
                 {getProductIcon(product)}
                 <h2 className="text-xl font-bold mt-4 text-center">{product.name}</h2>
@@ -90,24 +96,14 @@ const AccessProducts = () => {
                 className="w-full mt-auto" 
                 disabled={product.purchaseInfo?.status !== "active"}
               >
-                {product.purchaseInfo?.status === "active" ? (
-                  <>
-                    <Unlock className="mr-2 h-4 w-4" />
-                    Access Content
-                  </>
-                ) : (
-                  <>
-                    <Lock className="mr-2 h-4 w-4" />
-                    Renew Subscription
-                  </>
-                )}
+                <Unlock className="mr-2 h-4 w-4" />
+                Access Content
               </Button>
             </Card>
           ))}
         </div>
       ) : (
         <div className="text-center p-12 border rounded-lg bg-gray-50">
-          <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">No Products Found</h3>
           <p className="text-muted-foreground mb-6">
             You haven't purchased any products or subscriptions yet.
