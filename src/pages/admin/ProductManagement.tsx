@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import CodeEditor from "@/components/CodeEditor";
+import { getProductsCollection } from "@/services/dbService";
 
 interface Product {
   id: number;
@@ -116,10 +117,11 @@ const initialProducts: Product[] = [
 ];
 
 const ProductManagement = () => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [newProduct, setNewProduct] = useState<Partial<Product>>({
     name: "",
     price: "",
@@ -137,11 +139,48 @@ const ProductManagement = () => {
   const [codeEditorTab, setCodeEditorTab] = useState("html");
   const { toast } = useToast();
 
+  // Load products from database on component mount
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        const productsCollection = await getProductsCollection();
+        if (productsCollection) {
+          const storedProducts = await productsCollection.find({}).toArray();
+          
+          if (storedProducts && storedProducts.length > 0) {
+            setProducts(storedProducts);
+          } else {
+            // If no products in database, initialize with default products
+            const collection = await getProductsCollection();
+            if (collection) {
+              for (const product of initialProducts) {
+                await collection.insertOne(product);
+              }
+              setProducts(initialProducts);
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading products:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load products",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProducts();
+  }, [toast]);
+
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!newProduct.name || !newProduct.price) {
       toast({
         title: "Missing Information",
@@ -151,66 +190,109 @@ const ProductManagement = () => {
       return;
     }
 
-    const newId = Math.max(...products.map(product => product.id), 0) + 1;
-    const productToAdd = {
-      id: newId,
-      name: newProduct.name,
-      price: newProduct.price,
-      status: newProduct.status as "Active" | "Draft" | "Archived",
-      description: newProduct.description || "",
-      type: newProduct.type as "Membership" | "Digital Download" | "Course",
-      downloadUrl: newProduct.downloadUrl,
-      licensedUsers: 0,
-      codeContent: newProduct.codeContent || {
-        html: "<!-- Add your HTML content here -->",
-        css: "/* Add your CSS styles here */",
-        js: "// Add your JavaScript code here"
-      }
-    };
+    try {
+      const newId = Math.max(...products.map(product => product.id), 0) + 1;
+      const productToAdd = {
+        id: newId,
+        name: newProduct.name,
+        price: newProduct.price,
+        status: newProduct.status as "Active" | "Draft" | "Archived",
+        description: newProduct.description || "",
+        type: newProduct.type as "Membership" | "Digital Download" | "Course",
+        downloadUrl: newProduct.downloadUrl,
+        licensedUsers: 0,
+        codeContent: newProduct.codeContent || {
+          html: "<!-- Add your HTML content here -->",
+          css: "/* Add your CSS styles here */",
+          js: "// Add your JavaScript code here"
+        }
+      };
 
-    setProducts([...products, productToAdd]);
-    setIsAddDialogOpen(false);
-    setNewProduct({
-      name: "",
-      price: "",
-      status: "Draft",
-      description: "",
-      type: "Digital Download",
-      codeContent: {
-        html: "<!-- Add your HTML content here -->",
-        css: "/* Add your CSS styles here */",
-        js: "// Add your JavaScript code here"
-      }
-    });
+      const productsCollection = await getProductsCollection();
+      if (productsCollection) {
+        await productsCollection.insertOne(productToAdd);
+        setProducts([...products, productToAdd]);
+        setIsAddDialogOpen(false);
+        setNewProduct({
+          name: "",
+          price: "",
+          status: "Draft",
+          description: "",
+          type: "Digital Download",
+          codeContent: {
+            html: "<!-- Add your HTML content here -->",
+            css: "/* Add your CSS styles here */",
+            js: "// Add your JavaScript code here"
+          }
+        });
 
-    toast({
-      title: "Product Added",
-      description: `${productToAdd.name} has been added successfully.`
-    });
+        toast({
+          title: "Product Added",
+          description: `${productToAdd.name} has been added successfully.`
+        });
+      }
+    } catch (error) {
+      console.error("Error adding product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to add product",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async () => {
     if (!selectedProduct) return;
 
-    setProducts(products.map(product => 
-      product.id === selectedProduct.id ? selectedProduct : product
-    ));
-    
-    setIsEditDialogOpen(false);
-    
-    toast({
-      title: "Product Updated",
-      description: `${selectedProduct.name} has been updated successfully.`
-    });
+    try {
+      const productsCollection = await getProductsCollection();
+      if (productsCollection) {
+        await productsCollection.updateOne(
+          { id: selectedProduct.id },
+          { $set: selectedProduct }
+        );
+        
+        setProducts(products.map(product => 
+          product.id === selectedProduct.id ? selectedProduct : product
+        ));
+        
+        setIsEditDialogOpen(false);
+        
+        toast({
+          title: "Product Updated",
+          description: `${selectedProduct.name} has been updated successfully.`
+        });
+      }
+    } catch (error) {
+      console.error("Error updating product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update product",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleDeleteProduct = (id: number) => {
-    setProducts(products.filter(product => product.id !== id));
-    
-    toast({
-      title: "Product Deleted",
-      description: "The product has been deleted successfully."
-    });
+  const handleDeleteProduct = async (id: number) => {
+    try {
+      const productsCollection = await getProductsCollection();
+      if (productsCollection) {
+        await productsCollection.deleteOne({ id });
+        setProducts(products.filter(product => product.id !== id));
+        
+        toast({
+          title: "Product Deleted",
+          description: "The product has been deleted successfully."
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleFileUpload = () => {
@@ -266,6 +348,17 @@ const ProductManagement = () => {
       });
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <div className="animate-spin w-8 h-8 border-4 border-gray-300 border-t-blue-600 rounded-full mx-auto"></div>
+          <p className="text-gray-500">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
