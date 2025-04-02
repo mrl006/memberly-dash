@@ -371,11 +371,8 @@ const ProductManagement = () => {
       setNewProduct({
         ...newProduct,
         codeContent: {
-          ...newProduct,
-          codeContent: {
-            ...newProduct.codeContent!,
-            [type]: value
-          }
+          ...newProduct.codeContent!,
+          [type]: value
         }
       });
     }
