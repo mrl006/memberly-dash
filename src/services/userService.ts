@@ -1,6 +1,7 @@
 
 import { toast } from "@/hooks/use-toast";
 import { getGeneralSettings } from "./settingsService";
+import { getUsersCollection } from "./dbService";
 
 export interface User {
   id: string;
@@ -11,8 +12,8 @@ export interface User {
   joined: string;
 }
 
-// Retrieve users from localStorage
-const getInitialUsers = (): User[] => {
+// Fallback to localStorage if MongoDB connection fails
+const getLocalUsers = (): User[] => {
   const storedUsers = localStorage.getItem('users');
   if (storedUsers) {
     try {
@@ -21,20 +22,32 @@ const getInitialUsers = (): User[] => {
       console.error('Error parsing stored users:', e);
     }
   }
-  
-  // Return empty array if no users in localStorage
   return [];
 };
 
 // Get all users
-export const getUsers = (): User[] => {
-  return getInitialUsers();
+export const getUsers = async (): Promise<User[]> => {
+  try {
+    const collection = await getUsersCollection();
+    if (!collection) {
+      return getLocalUsers();
+    }
+    
+    const users = await collection.find({}).toArray();
+    return users as User[];
+  } catch (error) {
+    console.error('Error fetching users from MongoDB:', error);
+    toast({
+      title: "Database Error",
+      description: "Failed to fetch users. Using local data instead.",
+      variant: "destructive",
+    });
+    return getLocalUsers();
+  }
 };
 
 // Add a new user
-export const addUser = (user: Omit<User, 'id' | 'joined' | 'status'>): User => {
-  const users = getUsers();
-  
+export const addUser = async (user: Omit<User, 'id' | 'joined' | 'status'>): Promise<User> => {
   // Generate a unique ID based on timestamp and random number
   const uniqueId = Date.now().toString(36) + Math.random().toString(36).substring(2);
   
@@ -49,47 +62,110 @@ export const addUser = (user: Omit<User, 'id' | 'joined' | 'status'>): User => {
     }),
   };
   
-  const updatedUsers = [...users, newUser];
-  saveUsers(updatedUsers);
-  
-  return newUser;
+  try {
+    const collection = await getUsersCollection();
+    if (!collection) {
+      throw new Error('Database connection failed');
+    }
+    
+    await collection.insertOne(newUser);
+    return newUser;
+  } catch (error) {
+    console.error('Error adding user to MongoDB:', error);
+    
+    // Fallback to localStorage
+    const users = getLocalUsers();
+    const updatedUsers = [...users, newUser];
+    saveLocalUsers(updatedUsers);
+    
+    toast({
+      title: "Database Warning",
+      description: "User saved locally only. Database connection failed.",
+      variant: "destructive",
+    });
+    
+    return newUser;
+  }
 };
 
 // Update an existing user
-export const updateUser = (userId: string, userData: Partial<User>): User | null => {
-  const users = getUsers();
-  
-  const updatedUsers = users.map((user) =>
-    user.id === userId ? { ...user, ...userData } : user
-  );
-  
-  const updatedUser = updatedUsers.find(user => user.id === userId) || null;
-  
-  if (updatedUser) {
-    saveUsers(updatedUsers);
-    return updatedUser;
+export const updateUser = async (userId: string, userData: Partial<User>): Promise<User | null> => {
+  try {
+    const collection = await getUsersCollection();
+    if (!collection) {
+      throw new Error('Database connection failed');
+    }
+    
+    const result = await collection.findOneAndUpdate(
+      { id: userId },
+      { $set: userData },
+      { returnDocument: 'after' }
+    );
+    
+    return result as unknown as User;
+  } catch (error) {
+    console.error('Error updating user in MongoDB:', error);
+    
+    // Fallback to localStorage
+    const users = getLocalUsers();
+    const updatedUsers = users.map((user) =>
+      user.id === userId ? { ...user, ...userData } : user
+    );
+    
+    const updatedUser = updatedUsers.find(user => user.id === userId) || null;
+    
+    if (updatedUser) {
+      saveLocalUsers(updatedUsers);
+      
+      toast({
+        title: "Database Warning",
+        description: "User updated locally only. Database connection failed.",
+        variant: "destructive",
+      });
+      
+      return updatedUser;
+    }
+    
+    return null;
   }
-  
-  return null;
 };
 
 // Delete a user
-export const deleteUser = (userId: string): boolean => {
-  const users = getUsers();
-  
-  const updatedUsers = users.filter((user) => user.id !== userId);
-  
-  if (updatedUsers.length < users.length) {
-    saveUsers(updatedUsers);
-    return true;
+export const deleteUser = async (userId: string): Promise<boolean> => {
+  try {
+    const collection = await getUsersCollection();
+    if (!collection) {
+      throw new Error('Database connection failed');
+    }
+    
+    const result = await collection.deleteOne({ id: userId });
+    return result.deletedCount > 0;
+  } catch (error) {
+    console.error('Error deleting user from MongoDB:', error);
+    
+    // Fallback to localStorage
+    const users = getLocalUsers();
+    const updatedUsers = users.filter((user) => user.id !== userId);
+    
+    if (updatedUsers.length < users.length) {
+      saveLocalUsers(updatedUsers);
+      
+      toast({
+        title: "Database Warning",
+        description: "User deleted locally only. Database connection failed.",
+        variant: "destructive",
+      });
+      
+      return true;
+    }
+    
+    return false;
   }
-  
-  return false;
 };
 
 // Toggle user status (active/inactive)
-export const toggleUserStatus = (userId: string): User | null => {
-  const users = getUsers();
+export const toggleUserStatus = async (userId: string): Promise<User | null> => {
+  const users = await getUsers();
   const userToUpdate = users.find(user => user.id === userId);
   
   if (!userToUpdate) return null;
@@ -100,13 +176,13 @@ export const toggleUserStatus = (userId: string): User | null => {
 };
 
 // Find a user by email - used for authentication
-export const findUserByEmail = (email: string): User | undefined => {
-  const users = getUsers();
+export const findUserByEmail = async (email: string): Promise<User | undefined> => {
+  const users = await getUsers();
   return users.find(user => user.email.toLowerCase() === email.toLowerCase());
 };
 
-// Save users to localStorage
-const saveUsers = (users: User[]): void => {
+// Helper function to save users to localStorage as fallback
+const saveLocalUsers = (users: User[]): void => {
   try {
     localStorage.setItem('users', JSON.stringify(users));
   } catch (e) {
